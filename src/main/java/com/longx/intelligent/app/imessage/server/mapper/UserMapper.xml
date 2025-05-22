@@ -1,0 +1,121 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.longx.intelligent.app.imessage.server.mapper.UserMapper">
+
+    <resultMap id="UserMap" type="com.longx.intelligent.app.imessage.server.data.User">
+        <id column="imessage_id" property="imessageId" />
+        <result column="imessage_id_user" property="imessageIdUser"/>
+        <result column="email" property="email"/>
+        <result column="password" property="passwordHash"/>
+        <result column="register_time" property="registerTime"/>
+        <result column="username" property="username"/>
+        <result column="sex" property="sex"/>
+        <association property="avatar" javaType="com.longx.intelligent.app.imessage.server.data.Avatar">
+            <result column="hash" property="hash"/>
+            <result column="aImessageId" property="imessageId"/>
+            <result column="extension" property="extension"/>
+            <result column="time" property="time"/>
+        </association>
+        <association property="firstRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="1st_level_adcode" property="adcode"/>
+            <result column="d1lName" property="name"/>
+        </association>
+        <association property="secondRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="2nd_level_adcode" property="adcode"/>
+            <result column="d2lName" property="name"/>
+        </association>
+        <association property="thirdRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="3rd_level_adcode" property="adcode"/>
+            <result column="d3lName" property="name"/>
+        </association>
+    </resultMap>
+
+    <select id="findUserByImessageId" resultMap="UserMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, a.hash, a.imessage_id aImessageId, a.extension, a.time
+        FROM user u
+        LEFT JOIN amap_district_1st_level d1l ON u.1st_level_adcode = d1l.1st_level_adcode
+        LEFT JOIN amap_district_2nd_level d2l ON u.2nd_level_adcode = d2l.2nd_level_adcode
+        LEFT JOIN amap_district_3rd_level d3l ON u.3rd_level_adcode = d3l.3rd_level_adcode
+        LEFT JOIN avatar a ON u.avatar_hash = a.hash
+        WHERE u.imessage_id = #{imessageId}
+    </select>
+
+    <select id="findUserByImessageIdUser" resultMap="UserMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, a.hash, a.imessage_id aImessageId, a.extension, a.time
+        FROM user u
+        LEFT JOIN amap_district_1st_level d1l ON u.1st_level_adcode = d1l.1st_level_adcode
+        LEFT JOIN amap_district_2nd_level d2l ON u.2nd_level_adcode = d2l.2nd_level_adcode
+        LEFT JOIN amap_district_3rd_level d3l ON u.3rd_level_adcode = d3l.3rd_level_adcode
+        LEFT JOIN avatar a ON u.avatar_hash = a.hash
+        WHERE imessage_id_user = #{imessageIdUser}
+    </select>
+
+    <select id="findUserByEmail" resultMap="UserMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, a.hash, a.imessage_id aImessageId, a.extension, a.time
+        FROM user u
+        LEFT JOIN amap_district_1st_level d1l ON u.1st_level_adcode = d1l.1st_level_adcode
+        LEFT JOIN amap_district_2nd_level d2l ON u.2nd_level_adcode = d2l.2nd_level_adcode
+        LEFT JOIN amap_district_3rd_level d3l ON u.3rd_level_adcode = d3l.3rd_level_adcode
+        LEFT JOIN avatar a ON u.avatar_hash = a.hash
+        WHERE email = #{email}
+    </select>
+
+    <insert id="insertUser">
+        INSERT INTO user(imessage_id, imessage_id_user, email, password, username, sex, register_time, 1st_level_adcode, 2nd_level_adcode, 3rd_level_adcode)
+        VALUES (#{imessageId}, #{imessageIdUser}, #{email}, #{passwordHash}, #{username}, #{sex}, #{registerTime}, #{firstRegion.adcode}, #{secondRegion.adcode}, #{thirdRegion.adcode})
+    </insert>
+
+    <update id="updatePassword">
+        UPDATE user SET password = #{passwordHash} WHERE email = #{email}
+    </update>
+
+    <update id="updateImessageIdUser">
+        UPDATE user SET imessage_id_user = #{newImessageIdUser} WHERE imessage_id = #{imessageId}
+    </update>
+
+    <select id="findImessageIdUserLastChangeTime"  resultType="java.util.Date">
+        SELECT imessage_id_user_last_change_time FROM user WHERE imessage_id = #{imessageId};
+    </select>
+
+    <update id="updateImessageIdUserLastChangeTime">
+        UPDATE user SET imessage_id_user_last_change_time = #{lastChangeTime} WHERE imessage_id = #{imessageId}
+    </update>
+
+    <update id="updateUsername">
+        UPDATE user SET username = #{newUsername} WHERE imessage_id = #{imessageId}
+    </update>
+
+    <update id="updateEmail">
+        UPDATE user SET email = #{newEmail} WHERE imessage_id = #{imessageId}
+    </update>
+
+    <update id="updateSex">
+        UPDATE user SET sex = #{sex} WHERE imessage_id = #{imessageId}
+    </update>
+
+    <update id="changeRegion">
+        UPDATE user SET 1st_level_adcode = #{firstRegionAdcode},2nd_level_adcode = #{secondRegionAdcode},3rd_level_adcode = #{thirdRegionAdcode} WHERE imessage_id = #{imessageId}
+    </update>
+
+    <insert id="updateAvatar">
+        INSERT INTO avatar(hash, imessage_id, data, extension, time)
+        VALUES (#{avatar.hash}, #{avatar.imessageId}, #{data}, #{avatar.extension}, #{avatar.time})
+    </insert>
+
+    <update id="updateAvatarHashWithUser">
+        UPDATE user SET avatar_hash = #{avatarHash} WHERE imessage_id = #{imessageId}
+    </update>
+
+    <select id="findAvatar">
+        SELECT * FROM avatar
+        WHERE hash = #{avatarHash}
+        ORDER BY time DESC
+        LIMIT 1;
+    </select>
+
+    <select id="findAvatarData">
+        SELECT data FROM avatar
+        WHERE hash = #{avatarHash}
+        ORDER BY time DESC
+        LIMIT 1;
+    </select>
+</mapper>

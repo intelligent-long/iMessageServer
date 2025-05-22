@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.longx.intelligent.app.imessage.server.ui.LaunchUi">
+  <grid id="27dc6" binding="rootPane" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="20" y="20" width="700" height="1000"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="d7f23" layout-manager="BorderLayout" hgap="0" vgap="0">
+        <constraints border-constraint="South"/>
+        <properties/>
+        <border type="empty">
+          <size top="12" left="12" bottom="12" right="12"/>
+        </border>
+        <children>
+          <component id="7e0de" class="javax.swing.JButton" binding="launchButton">
+            <constraints border-constraint="East"/>
+            <properties>
+              <preferredSize width="80" height="33"/>
+              <text value="启动"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+      <scrollpane id="11909">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="55916" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+            <margin top="0" left="0" bottom="0" right="0"/>
+            <constraints/>
+            <properties>
+              <visible value="true"/>
+            </properties>
+            <border type="empty">
+              <size top="13" left="0" bottom="13" right="0"/>
+            </border>
+            <children>
+              <grid id="fc59" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none">
+                  <title-color color="-4013374"/>
+                </border>
+                <children>
+                  <grid id="55062" layout-manager="GridLayoutManager" row-count="21" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
+                    <constraints border-constraint="West"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <component id="945db" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="端口："/>
+                        </properties>
+                      </component>
+                      <component id="debe7" class="javax.swing.JLabel" binding="labelMysql">
+                        <constraints>
+                          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <font/>
+                          <text value="MySQL"/>
+                        </properties>
+                      </component>
+                      <component id="d38bd" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="URL："/>
+                        </properties>
+                      </component>
+                      <component id="8fee2" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="用户名："/>
+                        </properties>
+                      </component>
+                      <component id="4ce84" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="密码："/>
+                        </properties>
+                      </component>
+                      <vspacer id="d7425">
+                        <constraints>
+                          <grid row="20" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                      </vspacer>
+                      <component id="f7584" class="javax.swing.JLabel" binding="labelRedis">
+                        <constraints>
+                          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <font/>
+                          <text value="Redis"/>
+                        </properties>
+                      </component>
+                      <component id="7fe34" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="数据库："/>
+                        </properties>
+                      </component>
+                      <component id="3b56e" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="主机："/>
+                        </properties>
+                      </component>
+                      <component id="5f32a" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="端口："/>
+                        </properties>
+                      </component>
+                      <component id="9e71a" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="密码："/>
+                        </properties>
+                      </component>
+                      <component id="cb695" class="javax.swing.JLabel" binding="labelMailServer">
+                        <constraints>
+                          <grid row="10" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <enabled value="true"/>
+                          <font/>
+                          <text value="邮件服务器"/>
+                        </properties>
+                      </component>
+                      <component id="caba8" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="12" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="主机："/>
+                        </properties>
+                      </component>
+                      <component id="b58e3" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="13" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="端口："/>
+                        </properties>
+                      </component>
+                      <component id="4ea21" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="14" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="用户名："/>
+                        </properties>
+                      </component>
+                      <component id="e2d93" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="15" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="密码："/>
+                        </properties>
+                      </component>
+                      <component id="51eed" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="16" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="默认编码："/>
+                        </properties>
+                      </component>
+                      <component id="f30d4" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="18" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="启用STARTTLS："/>
+                        </properties>
+                      </component>
+                      <component id="7123b" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="17" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="身份验证："/>
+                        </properties>
+                      </component>
+                      <component id="87aa5" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="19" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="必须STARTTLS："/>
+                        </properties>
+                      </component>
+                      <component id="d50ca" class="javax.swing.JLabel">
+                        <constraints>
+                          <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="4" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties>
+                          <text value="使用 SMTP 协议"/>
+                        </properties>
+                      </component>
+                    </children>
+                  </grid>
+                  <grid id="dcdee" layout-manager="GridLayoutManager" row-count="21" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+                    <margin top="0" left="0" bottom="0" right="0"/>
+                    <constraints border-constraint="East"/>
+                    <properties/>
+                    <border type="none"/>
+                    <children>
+                      <grid id="4d94f" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties/>
+                        <border type="none"/>
+                        <children/>
+                      </grid>
+                      <vspacer id="39559">
+                        <constraints>
+                          <grid row="20" column="0" row-span="1" col-span="2" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                      </vspacer>
+                      <grid id="6c781" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="a70f7" class="javax.swing.JTextField" binding="portField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <margin top="2" left="6" bottom="2" right="6"/>
+                              <minimumSize width="49" height="29"/>
+                              <preferredSize width="70" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="aa0c6" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="1fd3c" class="javax.swing.JTextField" binding="mySqlUrlField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <minimumSize width="49" height="29"/>
+                              <preferredSize width="300" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="1d83e" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="d597a" class="javax.swing.JTextField" binding="mySqlUsernameField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="150" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="2cee5" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="7be3a" class="javax.swing.JPasswordField" binding="mySqlPasswordField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="150" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="c423d" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="3193a" class="javax.swing.JTextField" binding="redisDatabaseField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <minimumSize width="49" height="29"/>
+                              <preferredSize width="70" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="548c2" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="5" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties/>
+                        <border type="none"/>
+                        <children/>
+                      </grid>
+                      <grid id="9a1e5" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="4c8cc" class="javax.swing.JTextField" binding="redisHostField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="150" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="75b24" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="e98" class="javax.swing.JTextField" binding="redisPortField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <minimumSize width="49" height="29"/>
+                              <preferredSize width="70" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="9a691" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="54252" class="javax.swing.JPasswordField" binding="redisPasswordField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="150" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="c72bd" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="10" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties/>
+                        <border type="none"/>
+                        <children/>
+                      </grid>
+                      <grid id="4e2ff" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="12" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="fc017" class="javax.swing.JTextField" binding="mailServerHostField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="150" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="1ed05" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="13" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="f84be" class="javax.swing.JTextField" binding="mailServerPortField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <minimumSize width="49" height="29"/>
+                              <preferredSize width="70" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="28527" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="14" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="313d3" class="javax.swing.JTextField" binding="mailServerUsernameField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="150" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="32889" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="15" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="16847" class="javax.swing.JPasswordField" binding="mailServerPasswordField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="150" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="235fe" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="16" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="empty">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="6a776" class="javax.swing.JTextField" binding="mailServerDefaultEncodingField">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <minimumSize width="49" height="29"/>
+                              <preferredSize width="70" height="29"/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="c434d" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="17" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="none">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="533b7" class="javax.swing.JCheckBox" binding="mailServerAuthCheckBox">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="21" height="31"/>
+                              <selected value="true"/>
+                              <text value=""/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="33748" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="18" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="none">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="175b" class="javax.swing.JCheckBox" binding="mailServerEnableStarttlsCheckBox">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="21" height="31"/>
+                              <selected value="true"/>
+                              <text value=""/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="e0877" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="19" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                        </constraints>
+                        <properties/>
+                        <border type="none">
+                          <size top="1" left="0" bottom="1" right="0"/>
+                        </border>
+                        <children>
+                          <component id="3f847" class="javax.swing.JCheckBox" binding="mailServerRequiredStarttlsCheckBox">
+                            <constraints border-constraint="West"/>
+                            <properties>
+                              <preferredSize width="21" height="31"/>
+                              <selected value="true"/>
+                              <text value=""/>
+                            </properties>
+                          </component>
+                        </children>
+                      </grid>
+                      <grid id="58320" layout-manager="BorderLayout" hgap="0" vgap="0">
+                        <constraints>
+                          <grid row="11" column="0" row-span="1" col-span="2" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false">
+                            <preferred-size width="-1" height="31"/>
+                          </grid>
+                        </constraints>
+                        <properties/>
+                        <border type="none"/>
+                        <children/>
+                      </grid>
+                    </children>
+                  </grid>
+                </children>
+              </grid>
+              <vspacer id="236e7">
+                <constraints>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+                </constraints>
+              </vspacer>
+            </children>
+          </grid>
+        </children>
+      </scrollpane>
+    </children>
+  </grid>
+</form>

@@ -1,0 +1,85 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.longx.intelligent.app.imessage.server.mapper.AmapDistrictMapper">
+
+    <delete id="clearFirstRegions">
+        DELETE FROM amap_district_1st_level
+    </delete>
+
+    <delete id="clearSecondRegions">
+        DELETE FROM amap_district_2nd_level
+    </delete>
+
+    <delete id="clearThirdRegions">
+        DELETE FROM amap_district_3rd_level
+    </delete>
+
+    <insert id="insertFirstRegions">
+        INSERT INTO amap_district_1st_level(1st_level_adcode, name) VALUES
+        <foreach collection="firstRegions" item="firstRegion" separator=",">
+            (#{firstRegion.adcode}, #{firstRegion.name})
+        </foreach>
+    </insert>
+
+    <insert id="insertSecondRegions">
+        INSERT INTO amap_district_2nd_level(2nd_level_adcode, name, 1st_level_adcode) VALUES
+        <foreach collection="secondRegions" item="secondRegion" separator=",">
+            (#{secondRegion.adcode}, #{secondRegion.name}, #{firstRegionAdcode})
+        </foreach>
+    </insert>
+
+    <insert id="insertThirdRegions">
+        INSERT INTO amap_district_3rd_level(3rd_level_adcode, name, 2nd_level_adcode) VALUES
+        <foreach collection="thirdRegions" item="thirdRegion" separator=",">
+            (#{thirdRegion.adcode}, #{thirdRegion.name}, #{secondRegionAdcode})
+        </foreach>
+    </insert>
+
+    <select id="getFirstRegions" resultType="com.longx.intelligent.app.imessage.server.data.AmapDistrict">
+        SELECT 1st_level_adcode adcode, name FROM amap_district_1st_level
+    </select>
+
+    <select id="getSecondRegions" resultType="com.longx.intelligent.app.imessage.server.data.AmapDistrict">
+        SELECT 2nd_level_adcode adcode, name FROM amap_district_2nd_level WHERE 1st_level_adcode = #{firstRegionAdcode}
+    </select>
+
+    <select id="getThirdRegions" resultType="com.longx.intelligent.app.imessage.server.data.AmapDistrict">
+        SELECT 3rd_level_adcode adcode, name FROM amap_district_3rd_level WHERE 2nd_level_adcode = #{secondRegionAdcode}
+    </select>
+
+    <select id="isFirstRegionExist" resultType="boolean">
+        SELECT IF( EXISTS(
+            SELECT *
+            FROM amap_district_1st_level
+            WHERE 1st_level_adcode = #{firstRegionAdcode}), 1, 0)
+    </select>
+
+    <select id="isSecondRegionExist" resultType="boolean">
+        SELECT IF( EXISTS(
+            SELECT *
+            FROM amap_district_2nd_level
+            WHERE 1st_level_adcode = #{firstRegionAdcode} AND 2nd_level_adcode = #{secondRegionAdcode}), 1, 0)
+    </select>
+
+    <select id="isThirdRegionExist" resultType="boolean">
+        SELECT IF( EXISTS(
+            SELECT *
+            FROM amap_district_3rd_level
+            WHERE 2nd_level_adcode = #{secondRegionAdcode} AND 3rd_level_adcode = #{thirdRegionAdcode}), 1, 0)
+    </select>
+
+    <select id="findFirstRegionName" resultType="string">
+        SELECT name FROM amap_district_1st_level WHERE 1st_level_adcode = #{firstRegionAdcode}
+    </select>
+
+    <select id="findSecondRegionName" resultType="string">
+        SELECT name FROM amap_district_2nd_level WHERE 2nd_level_adcode = #{secondRegionAdcode}
+    </select>
+
+    <select id="findThirdRegionName" resultType="string">
+        SELECT name FROM amap_district_3rd_level WHERE 3rd_level_adcode = #{thirdRegionAdcode}
+    </select>
+
+    <select id="countFirstRegion" resultType="integer">
+        SELECT COUNT(*) FROM amap_district_1st_level
+    </select>
+</mapper>

@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: iMessage Server
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+  servlet:
+    multipart:
+      max-file-size: 1GB
+      max-request-size: 1GB
+  mvc:
+    async:
+      request-timeout: 60000
+  mail:
+    protocol: smtp
+server:
+  servlet:
+    session:
+      cookie:
+        max-age: 2592000
+    encoding:
+      enabled: true
+      charset: UTF-8
+      force: true
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+imessage:
+  lowest-allow-client-version: 1
+  current-client-version: 1
+

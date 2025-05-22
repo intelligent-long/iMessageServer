@@ -1,0 +1,329 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.longx.intelligent.app.imessage.server.mapper.BroadcastMapper">
+
+    <resultMap id="BroadcastMap" type="com.longx.intelligent.app.imessage.server.data.Broadcast">
+        <id property="broadcastId" column="broadcast_id"/>
+        <result property="imessageId" column="imessage_id"/>
+        <result property="channelName" column="username"/>
+        <result property="channelAvatarHash" column="avatar_hash"/>
+        <result property="time" column="time"/>
+        <result property="lastEditTime" column="last_edit_time"/>
+        <result property="text" column="text"/>
+        <result property="likeCount" column="likeCount"/>
+        <result property="liked" column="liked"/>
+        <result property="commentCount" column="commentCount"/>
+        <result property="commented" column="commented"/>
+        <association property="broadcastPermission" javaType="com.longx.intelligent.app.imessage.server.data.BroadcastPermission">
+            <result property="broadcastId" column="broadcast_id"/>
+            <result property="permission" column="permission"/>
+            <collection property="excludeConnectedChannels" ofType="string">
+                <result column="channel_id"/>
+            </collection>
+        </association>
+    </resultMap>
+
+    <resultMap id="BroadcastMediaMap" type="com.longx.intelligent.app.imessage.server.data.BroadcastMedia">
+        <id property="mediaId" column="media_id"/>
+        <result property="broadcastId" column="broadcast_id"/>
+        <result property="type" column="type"/>
+        <result property="extension" column="extension"/>
+        <result property="index" column="index"/>
+        <result property="videoDuration" column="video_duration"/>
+        <association property="size" javaType="com.longx.intelligent.app.imessage.server.data.Size">
+            <result property="width" column="width"/>
+            <result property="height" column="height"/>
+        </association>
+    </resultMap>
+
+    <insert id="insertBroadcast">
+        INSERT INTO broadcast(broadcast_id, imessage_id, time, text)
+        VALUES (#{broadcastId}, #{imessageId}, #{time}, #{text})
+    </insert>
+
+    <select id="findBroadcastsLimit" resultMap="BroadcastMap">
+        SELECT b.broadcast_id,
+        b.imessage_id,
+        u.username,
+        u.avatar_hash,
+        b.`time`,
+        b.last_edit_time,
+        b.text,
+        COUNT(DISTINCT bl.like_id) AS likeCount,
+        IF(COUNT(bl1.like_id) > 0, true, false) AS liked,
+        COUNT(DISTINCT bc.comment_id) AS commentCount,
+        IF(COUNT(bc1.comment_id) > 0, true, false) AS commented,
+        bp.permission,
+        bpecc.channel_id
+        FROM broadcast b
+        INNER JOIN user u ON b.imessage_id = u.imessage_id
+        LEFT JOIN broadcast_like bl ON b.broadcast_id = bl.broadcast_id AND bl.deleted = 0
+        LEFT JOIN broadcast_like bl1 ON b.broadcast_id = bl1.broadcast_id AND bl1.deleted = 0 AND bl1.imessage_id = #{currentUserId}
+        LEFT JOIN broadcast_comment bc ON b.broadcast_id = bc.broadcast_id AND bc.deleted = 0
+        LEFT JOIN broadcast_comment bc1 ON b.broadcast_id = bc1.broadcast_id AND bc1.deleted = 0 AND bc1.imessage_id = #{currentUserId}
+        LEFT JOIN broadcast_permission bp ON bp.broadcast_id = b.broadcast_id
+        LEFT JOIN broadcast_permission_exclude_connected_channels bpecc ON bp.broadcast_id = bpecc.broadcast_id
+        WHERE b.imessage_id IN
+        <foreach collection="channelIds" open="(" close=")" separator="," item="imessage_id" index="i">
+            #{imessage_id}
+        </foreach>
+        AND b.deleted != 1
+        <if test="lastBroadcastId != null and lastBroadcastId.trim() != ''">
+            AND b.index &lt; (SELECT `index` FROM broadcast WHERE broadcast_id = #{lastBroadcastId})
+        </if>
+        GROUP BY b.broadcast_id, b.imessage_id, b.`time`, b.last_edit_time, b.text, b.index, bp.permission, bpecc.channel_id
+        ORDER BY b.index
+        <if test="desc">
+            DESC
+        </if>
+        <if test="!desc">
+            ASC
+        </if>
+        LIMIT #{rows}
+    </select>
+
+    <select id="getBroadcastPosition">
+        SELECT COUNT(*) AS position
+        FROM broadcast
+        WHERE broadcast_id &lt; #{broadcastId}
+        ORDER BY broadcast_id;
+    </select>
+
+    <select id="countBroadcasts" resultType="int">
+        SELECT COUNT(*)
+        FROM (SELECT *
+        FROM broadcast
+        WHERE imessage_id IN
+        <foreach collection="channelIds" open="(" close=")" separator="," item="imessage_id" index="i">
+            #{imessage_id}
+        </foreach>
+        AND deleted != 1) b
+    </select>
+    
+    <insert id="insertBroadcastMedia">
+        INSERT INTO broadcast_media(media_id, broadcast_id, media, type, extension, `index`, width, height, video_duration)
+        VALUES (#{mediaId}, #{broadcastId}, #{media}, #{type}, #{extension}, #{index}, #{size.width}, #{size.height}, #{videoDuration})
+    </insert>
+
+    <select id="findBroadcastMedias" resultMap="BroadcastMediaMap">
+        SELECT media_id, broadcast_id, type, extension, `index`, width, height, video_duration
+        FROM broadcast_media
+        WHERE broadcast_id = #{broadcastId} AND deleted != true
+    </select>
+
+    <select id="findBroadcastMedia" resultMap="BroadcastMediaMap">
+        SELECT media_id, broadcast_id, type, extension, `index`, width, height, video_duration
+        FROM broadcast_media
+        WHERE media_id = #{mediaId} AND deleted != true
+    </select>
+
+    <select id="findBroadcastMediaData">
+        SELECT media
+        FROM broadcast_media
+        WHERE media_id = #{mediaId} AND deleted != true
+    </select>
+
+    <update id="deleteBroadcast">
+        UPDATE broadcast SET deleted = true WHERE broadcast_id = #{broadcastId} AND imessage_id = #{imessageId};
+    </update>
+    
+    <select id="findBroadcast" resultMap="BroadcastMap">
+        SELECT b.broadcast_id, b.imessage_id, u.username, u.avatar_hash, b.`time`, b.last_edit_time, b.text,
+            COUNT(DISTINCT bl.like_id) likeCount,
+            COUNT(bl1.like_id) > 0 liked,
+            COUNT(DISTINCT bc.comment_id) AS commentCount,
+            IF(COUNT(bc1.comment_id) > 0, true, false) AS commented,
+            bp.permission,
+            bpecc.channel_id
+        FROM broadcast b
+        INNER JOIN user u ON b.imessage_id = u.imessage_id
+        LEFT JOIN broadcast_like bl ON b.broadcast_id = bl.broadcast_id AND bl.deleted = 0
+        LEFT JOIN broadcast_like bl1 ON b.broadcast_id = bl1.broadcast_id AND bl1.deleted = 0 AND bl1.imessage_id = #{currentUserId}
+        LEFT JOIN broadcast_comment bc ON b.broadcast_id = bc.broadcast_id AND bc.deleted = 0
+        LEFT JOIN broadcast_comment bc1 ON b.broadcast_id = bc1.broadcast_id AND bc1.deleted = 0 AND bc1.imessage_id = #{currentUserId}
+        LEFT JOIN broadcast_permission bp ON bp.broadcast_id = b.broadcast_id
+        LEFT JOIN broadcast_permission_exclude_connected_channels bpecc ON bp.broadcast_id = bpecc.broadcast_id
+        WHERE b.broadcast_id = #{broadcastId} AND b.deleted != true
+        GROUP BY b.broadcast_id, b.imessage_id, b.`time`, b.last_edit_time, b.text, bp.permission, bpecc.channel_id
+    </select>
+
+    <update id="updateBroadcastText">
+        UPDATE broadcast SET text = #{newText} WHERE broadcast_id = #{broadcastId}
+    </update>
+
+    <update id="updateBroadcastLastEditTime">
+        UPDATE broadcast SET last_edit_time = #{lastEditTime} WHERE broadcast_id = #{broadcastId}
+    </update>
+
+    <delete id="deleteBroadcastMedias">
+        UPDATE broadcast_media SET deleted = true WHERE media_id IN
+        <foreach collection="broadcastMediaIds" open="(" close=")" separator="," item="media_id" index="i">
+            #{media_id}
+        </foreach>
+    </delete>
+
+    <update id="updateBroadcastMediaIndex">
+        UPDATE broadcast_media SET `index` = #{index} WHERE media_id = #{mediaId} AND deleted != true;
+    </update>
+    
+    <select id="findBroadcastLike" resultType="com.longx.intelligent.app.imessage.server.data.BroadcastLike">
+        SELECT bl.like_id likeId, bl.broadcast_id broadcastId, bl.imessage_id fromId, u.avatar_hash avatarHash, bl.time likeTime, u.username fromName,
+               b.text broadcastText, b.deleted broadcastDeleted, b.time broadcastTime, bm.media_id coverMediaId
+        FROM broadcast_like bl
+        INNER JOIN user u on bl.imessage_id = u.imessage_id
+        INNER JOIN broadcast b on bl.broadcast_id = b.broadcast_id
+        LEFT JOIN broadcast_media bm on b.broadcast_id = bm.broadcast_id AND bm.`index` = 0 AND bm.deleted = 0
+        WHERE bl.broadcast_id = #{broadcastId} AND bl.imessage_id = #{fromId} AND bl.deleted = 0
+    </select>
+
+    <select id="findBroadcastLikeById" resultType="com.longx.intelligent.app.imessage.server.data.BroadcastLike">
+        SELECT bl.like_id likeId, bl.broadcast_id broadcastId, bl.imessage_id fromId, u.avatar_hash avatarHash, bl.time likeTime, u.username fromName,
+               b.text broadcastText, b.deleted broadcastDeleted, b.time broadcastTime, bm.media_id coverMediaId
+        FROM broadcast_like bl
+        INNER JOIN user u on bl.imessage_id = u.imessage_id
+        INNER JOIN broadcast b on bl.broadcast_id = b.broadcast_id
+        LEFT JOIN broadcast_media bm on b.broadcast_id = bm.broadcast_id AND bm.`index` = 0 AND bm.deleted = 0
+        WHERE bl.like_id = #{likeId}
+        <if test="!includeDeleted">
+            AND bl.deleted = 0
+        </if>
+    </select>
+
+    <select id="findLikesOfChannelBroadcasts" resultType="com.longx.intelligent.app.imessage.server.data.BroadcastLike">
+        SELECT bl.like_id likeId, bl.broadcast_id broadcastId, bl.imessage_id fromId, u.avatar_hash avatarHash, bl.time likeTime, u.username fromName,
+        b.text broadcastText, b.deleted broadcastDeleted, b.time broadcastTime, bm.media_id coverMediaId
+        FROM broadcast_like bl
+        INNER JOIN user u on bl.imessage_id = u.imessage_id
+        INNER JOIN broadcast b on bl.broadcast_id = b.broadcast_id
+        LEFT JOIN broadcast_media bm on b.broadcast_id = bm.broadcast_id AND bm.`index` = 0 AND bm.deleted = 0
+        WHERE b.imessage_id = #{channelId}
+        <if test="lastLikeId != null and lastLikeId.trim() != ''">
+            AND bl.time &lt; (SELECT time FROM broadcast_like WHERE like_id = #{lastLikeId})
+        </if>
+        ORDER BY bl.time DESC
+        LIMIT #{rows}
+    </select>
+
+    <insert id="insertBroadcastLike">
+        INSERT INTO broadcast_like(like_id, broadcast_id, imessage_id, time)
+        VALUES (#{likeId}, #{broadcastId}, #{imessageId}, #{time})
+    </insert>
+
+    <delete id="deleteBroadcastLike">
+        UPDATE broadcast_like
+        SET deleted = 1
+        WHERE broadcast_id = #{broadcastId} AND imessage_id = #{imessageId} AND deleted != 1;
+    </delete>
+
+    <select id="findLikesOfBroadcast" resultType="com.longx.intelligent.app.imessage.server.data.BroadcastLike">
+        SELECT bl.like_id likeId, bl.broadcast_id broadcastId, bl.imessage_id fromId, u.avatar_hash avatarHash, bl.time likeTime, u.username fromName,
+        b.text broadcastText, b.deleted broadcastDeleted, b.time broadcastTime, bm.media_id coverMediaId
+        FROM broadcast_like bl
+        INNER JOIN user u on bl.imessage_id = u.imessage_id
+        INNER JOIN broadcast b on bl.broadcast_id = b.broadcast_id
+        LEFT JOIN broadcast_media bm on b.broadcast_id = bm.broadcast_id AND bm.`index` = 0 AND bm.deleted = 0
+        WHERE b.broadcast_id = #{broadcastId}
+        <if test="!includeDeleted">
+            AND bl.deleted = 0
+        </if>
+        <if test="lastLikeId != null and lastLikeId.trim() != ''">
+            AND bl.time &lt; (SELECT time FROM broadcast_like WHERE like_id = #{lastLikeId})
+        </if>
+        ORDER BY bl.time DESC
+        LIMIT #{rows}
+    </select>
+    
+    <insert id="insertBroadcastComment">
+        INSERT INTO broadcast_comment(comment_id, broadcast_id, imessage_id, text, to_comment_id, time)
+        VALUES (#{commentId}, #{broadcastId}, #{imessageId}, #{text}, #{toCommentId}, #{time})
+    </insert>
+
+    <select id="findBroadcastCommentById" resultType="com.longx.intelligent.app.imessage.server.data.BroadcastComment">
+        SELECT bc.comment_id commentId, bc.broadcast_id broadcastId, bc.imessage_id fromId, bc.text, bc.to_comment_id toCommentId, bc.time commentTime,
+            u.avatar_hash avatarHash, u.username fromName, b.text broadcastText, b.time broadcastTime, bm.media_id coverMediaId, b.deleted broadcastDeleted
+        FROM broadcast_comment bc
+        INNER JOIN user u on bc.imessage_id = u.imessage_id
+        INNER JOIN broadcast b on bc.broadcast_id = b.broadcast_id
+        LEFT JOIN broadcast_media bm on b.broadcast_id = bm.broadcast_id AND bm.`index` = 0 AND bm.deleted = 0
+        WHERE bc.comment_id = #{commentId}
+        <if test="!includeDeleted">
+            AND bc.deleted = 0
+        </if>
+        GROUP BY bc.comment_id, bc.broadcast_id, bc.imessage_id, bc.text, bc.to_comment_id,
+        bc.time, u.avatar_hash, u.username,
+        b.text, b.time, bm.media_id, b.deleted
+    </select>
+
+    <select id="findCommentsOfBroadcast" resultType="com.longx.intelligent.app.imessage.server.data.BroadcastComment">
+        SELECT bc.comment_id commentId, bc.broadcast_id broadcastId, bc.imessage_id fromId, bc.text, bc.to_comment_id toCommentId, bc.time commentTime,
+               u.avatar_hash avatarHash, u.username fromName, b.text broadcastText, b.time broadcastTime, bm.media_id coverMediaId, b.deleted broadcastDeleted
+        FROM broadcast_comment bc
+                 INNER JOIN user u on bc.imessage_id = u.imessage_id
+                 INNER JOIN broadcast b on bc.broadcast_id = b.broadcast_id
+                 LEFT JOIN broadcast_media bm on b.broadcast_id = bm.broadcast_id AND bm.`index` = 0 AND bm.deleted = 0
+        WHERE b.broadcast_id = #{broadcastId}
+        <if test="!includeDeleted">
+            AND bc.deleted = 0
+        </if>
+        <if test="lastCommentId != null and lastCommentId.trim() != ''">
+            AND bc.time &lt; (SELECT time FROM broadcast_comment WHERE comment_id = #{lastCommentId})
+        </if>
+        GROUP BY bc.comment_id, bc.broadcast_id, bc.imessage_id, bc.text, bc.to_comment_id,
+        bc.time, u.avatar_hash, u.username,
+        b.text, b.time, bm.media_id, b.deleted
+        ORDER BY bc.time DESC
+        LIMIT #{rows}
+    </select>
+
+    <select id="findCommentsOfChannelBroadcasts" resultType="com.longx.intelligent.app.imessage.server.data.BroadcastComment">
+        SELECT bc.comment_id commentId, bc.broadcast_id broadcastId, bc.imessage_id fromId, bc.text, bc.to_comment_id toCommentId, bc.time commentTime,
+        u.avatar_hash avatarHash, u.username fromName, b.text broadcastText, b.time broadcastTime, bm.media_id coverMediaId, b.deleted broadcastDeleted
+        FROM broadcast_comment bc
+        INNER JOIN user u on bc.imessage_id = u.imessage_id
+        INNER JOIN broadcast b on bc.broadcast_id = b.broadcast_id
+        LEFT JOIN broadcast_media bm on b.broadcast_id = bm.broadcast_id AND bm.`index` = 0 AND bm.deleted = 0
+        WHERE b.imessage_id = #{channelId}
+        <if test="lastCommentId != null and lastCommentId.trim() != ''">
+            AND bc.time &lt; (SELECT time FROM broadcast_comment WHERE comment_id = #{lastCommentId})
+        </if>
+        GROUP BY bc.comment_id, bc.broadcast_id, bc.imessage_id, bc.text, bc.to_comment_id,
+        bc.time, u.avatar_hash, u.username,
+        b.text, b.time, bm.media_id, b.deleted
+        ORDER BY bc.time DESC
+        LIMIT #{rows}
+    </select>
+
+    <delete id="deleteBroadcastComment">
+        UPDATE broadcast_comment SET deleted = 1 WHERE comment_id = #{commentId} AND imessage_id = #{imessageId}
+    </delete>
+
+    <select id="findReplyCommentsOfChannelBroadcasts" resultType="com.longx.intelligent.app.imessage.server.data.BroadcastComment">
+        SELECT bc.comment_id    commentId,
+               bc.broadcast_id  broadcastId,
+               bc.imessage_id      fromId,
+               bc.text,
+               bc.to_comment_id toCommentId,
+               bc.time          commentTime,
+               u.avatar_hash    avatarHash,
+               u.username       fromName,
+               b.text           broadcastText,
+               b.time           broadcastTime,
+               bm.media_id      coverMediaId,
+               b.deleted        broadcastDeleted
+        FROM broadcast_comment bc
+                 INNER JOIN user u on bc.imessage_id = u.imessage_id
+                 INNER JOIN broadcast b on bc.broadcast_id = b.broadcast_id
+                 LEFT JOIN broadcast_media bm
+                           on b.broadcast_id = bm.broadcast_id AND bm.`index` = 0 AND bm.deleted = 0
+        WHERE bc.imessage_id = #{channelId}
+          AND bc.to_comment_id IS NOT NULL
+        <if test="lastReplyCommentId != null and lastReplyCommentId.trim() != ''">
+            AND bc.time &lt; (SELECT time FROM broadcast_comment WHERE comment_id = #{lastReplyCommentId})
+        </if>
+        GROUP BY bc.comment_id, bc.broadcast_id, bc.imessage_id, bc.text, bc.to_comment_id,
+        bc.time, u.avatar_hash, u.username,
+        b.text, b.time, bm.media_id, b.deleted
+        ORDER BY bc.time DESC
+        LIMIT #{rows}
+    </select>
+
+</mapper>

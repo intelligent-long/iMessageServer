@@ -1,0 +1,312 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.longx.intelligent.app.imessage.server.mapper.GroupChannelMapper">
+
+    <insert id="insertGroupChannel">
+        INSERT INTO group_channel(group_channel_id, group_channel_id_user, owner, name, create_time, is_active)
+        VALUES (#{groupChannelId}, #{groupChannelIdUser}, #{ownerImessageId}, #{name}, #{createTime}, true)
+    </insert>
+
+    <select id="findGroupChannelById" resultMap="GroupChannelMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id
+        FROM group_channel gc
+        LEFT JOIN group_channel_note gcn ON gc.group_channel_id = gcn.group_channel_id AND gcn.is_active = true
+        LEFT JOIN amap_district_1st_level d1l ON gc.1st_level_adcode = d1l.1st_level_adcode
+        LEFT JOIN amap_district_2nd_level d2l ON gc.2nd_level_adcode = d2l.2nd_level_adcode
+        LEFT JOIN amap_district_3rd_level d3l ON gc.3rd_level_adcode = d3l.3rd_level_adcode
+        WHERE gc.group_channel_id = #{groupChannelId} AND gc.is_active = true
+    </select>
+
+    <select id="findGroupChannelByIdUser" resultMap="GroupChannelMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id
+        FROM group_channel gc
+                 LEFT JOIN group_channel_note gcn ON gc.group_channel_id = gcn.group_channel_id AND gcn.is_active = true
+                 LEFT JOIN amap_district_1st_level d1l ON gc.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON gc.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON gc.3rd_level_adcode = d3l.3rd_level_adcode
+        WHERE gc.group_channel_id_user = #{groupChannelIdUser}
+          AND gc.is_active = true
+    </select>
+
+    <select id="findGroupChannelTagMaxOrder">
+        SELECT MAX(`order`) AS max_order
+        FROM group_channel_tag
+        WHERE imessage_id = #{imessageId} AND is_active = true;
+    </select>
+
+    <insert id="insertGroupChannelTag">
+        INSERT INTO group_channel_tag(tag_id, imessage_id, name, `order`, is_active)
+        VALUES (#{tagId}, #{imessageId}, #{name}, #{order}, true)
+    </insert>
+
+    <resultMap id="GroupChannelTagMap" type="com.longx.intelligent.app.imessage.server.data.GroupChannelTag">
+        <id column="tag_id" property="tagId"/>
+        <result column="imessageId" property="imessageId"/>
+        <result column="name" property="name"/>
+        <result column="order" property="order"/>
+        <collection property="groupChannelIdList" ofType="string">
+            <result column="groupChannelId"/>
+        </collection>
+    </resultMap>
+
+    <select id="findOneGroupChannelTag" resultMap="GroupChannelTagMap">
+        SELECT gct.tag_id, gct.imessage_id imessageId, gct.name, gct.`order`, gctgc.group_channel_id groupChannelId
+        FROM group_channel_tag gct
+                 LEFT JOIN group_channel_tag_group_channel gctgc ON gct.tag_id = gctgc.tag_id
+        WHERE gct.imessage_id = #{imessageId} AND gct.tag_id = #{tagId} AND gct.is_active = true;
+    </select>
+
+    <select id="findAllGroupChannelTags" resultMap="GroupChannelTagMap">
+        SELECT gct.tag_id, gct.imessage_id imessageId, gct.name, gct.`order`, gctgc.group_channel_id groupChannelId
+        FROM group_channel_tag gct
+                 LEFT JOIN group_channel_tag_group_channel gctgc ON gct.tag_id = gctgc.tag_id
+        WHERE gct.imessage_id = #{imessageId} AND gct.is_active = true;
+    </select>
+
+    <insert id="insertTagGroupChannel">
+        INSERT INTO group_channel_tag_group_channel(tag_id, group_channel_id)
+        VALUES (#{tagId}, #{groupChannelId})
+    </insert>
+
+    <update id="updateGroupChannelNoteToInactive">
+        UPDATE group_channel_note SET is_active = false
+        WHERE imessage_id = #{imessageId} AND group_channel_id = #{groupChannelId} AND is_active = true
+    </update>
+
+    <insert id="insertGroupChannelNote">
+        INSERT INTO group_channel_note(imessage_id, group_channel_id, note, is_active)
+        VALUES (#{imessageId}, #{groupChannelId}, #{note}, true)
+    </insert>
+
+    <select id="isGroupChannelAssociated">
+        SELECT IF(EXISTS(
+            SELECT *
+            FROM group_channel_association
+            WHERE group_channel_id = #{groupChannelId} AND requester = #{requester} AND is_active = true
+        ), 1, 0)
+    </select>
+
+    <select id="findAllAssociatedGroupChannels" resultMap="GroupChannelMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id
+        FROM group_channel gc
+                 LEFT JOIN group_channel_note gcn
+                           ON gc.group_channel_id = gcn.group_channel_id AND gcn.imessage_id = #{currentUserId} AND
+                              gcn.is_active = true
+                 LEFT JOIN amap_district_1st_level d1l ON gc.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON gc.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON gc.3rd_level_adcode = d3l.3rd_level_adcode
+                 LEFT JOIN group_channel_avatar gca ON gc.avatar_hash = gca.hash
+        WHERE gc.group_channel_id IN (SELECT group_channel_id
+                                      FROM group_channel_association
+                                      WHERE requester = #{currentUserId}
+                                        AND is_active = true)
+    </select>
+
+    <select id="findAllOwnerGroupChannels" resultMap="GroupChannelMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id
+        FROM group_channel gc
+                 LEFT JOIN group_channel_note gcn
+                           ON gc.group_channel_id = gcn.group_channel_id AND gcn.imessage_id = #{currentUserId} AND
+                              gcn.is_active = true
+                 LEFT JOIN amap_district_1st_level d1l ON gc.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON gc.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON gc.3rd_level_adcode = d3l.3rd_level_adcode
+                 LEFT JOIN group_channel_avatar gca ON gc.avatar_hash = gca.hash
+        WHERE gc.owner = #{currentUserId}
+          AND gc.is_active = true
+    </select>
+
+    <resultMap id="GroupChannelMap" type="com.longx.intelligent.app.imessage.server.data.GroupChannel">
+        <id column="group_channel_id" property="groupChannelId"/>
+        <id column="group_channel_id_user" property="groupChannelIdUser"/>
+        <result column="owner" property="owner"/>
+        <result column="name" property="name"/>
+        <result column="note" property="note"/>
+        <result column="create_time" property="createTime"/>
+        <result column="avatar_hash" property="avatarHash"/>
+        <result column="group_join_verification" property="groupJoinVerification"/>
+        <association property="groupAvatar">
+            <id property="hash" column="avatar_hash"/>
+            <result property="groupChannelId" column="group_channel_id"/>
+            <result property="extension" column="extension"/>
+            <result property="time" column="time"/>
+        </association>
+        <association property="firstRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="1st_level_adcode" property="adcode"/>
+            <result column="d1lName" property="name"/>
+        </association>
+        <association property="secondRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="2nd_level_adcode" property="adcode"/>
+            <result column="d2lName" property="name"/>
+        </association>
+        <association property="thirdRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="3rd_level_adcode" property="adcode"/>
+            <result column="d3lName" property="name"/>
+        </association>
+        <collection property="groupChannelAssociations" ofType="com.longx.intelligent.app.imessage.server.data.GroupChannelAssociation"
+                    select="findAssociationsByGroupChannelId" column="{groupChannelId=group_channel_id, currentUserId=current_user_id}">
+        </collection>
+    </resultMap>
+
+    <select id="findAssociationsByGroupChannelId" resultMap="AssociationMap">
+        SELECT *, #{currentUserId} AS current_user_id
+        FROM group_channel_association gca
+                 INNER JOIN user u ON gca.requester = u.imessage_id
+        WHERE group_channel_id = #{groupChannelId}
+          AND is_active = true
+    </select>
+
+    <resultMap id="AssociationMap" type="com.longx.intelligent.app.imessage.server.data.GroupChannelAssociation">
+        <id column="association_id" property="associationId"/>
+        <result column="group_channel_id" property="groupChannelId"/>
+        <result column="owner" property="owner"/>
+        <result column="request_message" property="requestMessage"/>
+        <result column="request_time" property="requestTime"/>
+        <result column="accept_time" property="acceptTime"/>
+        <result column="invite_uuid" property="inviteUuid"/>
+        <association property="requester" javaType="com.longx.intelligent.app.imessage.server.data.Channel"
+                select="findChannelByImessageId" column="{requester=requester, currentUserId=current_user_id}"/>
+    </resultMap>
+
+    <select id="findChannelByImessageId" resultMap="ChannelMap">
+        SELECT *, u.imessage_id channelImessageId, u.imessage_id_user channelImessageIdUser, u.email email, u.username username, u.sex sex,
+               a.hash avatarHash, a.imessage_id avatarImessageId, a.extension avatarExtension, a.time avatarTime,
+               d1l.name d1lName, d2l.name d2lName, d3l.name d3lName,
+               CASE
+                   WHEN ca.imessage_id IS NOT NULL THEN true
+                   ELSE false
+                   END as associated,
+               cn.note note
+        FROM user u
+                 LEFT JOIN channel_association ca ON u.imessage_id = ca.channel_imessage_id AND ca.imessage_id = #{currentUserId} AND ca.channel_imessage_id = u.imessage_id AND ca.is_active = true
+                 LEFT JOIN amap_district_1st_level d1l ON u.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON u.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON u.3rd_level_adcode = d3l.3rd_level_adcode
+                 LEFT JOIN avatar a ON u.avatar_hash = a.hash
+                 LEFT JOIN channel_note cn ON #{currentUserId} = cn.imessage_id AND u.imessage_id = cn.channel_imessage_id AND cn.is_active = true
+        WHERE u.imessage_id = #{requester};
+    </select>
+
+    <resultMap id="ChannelMap" type="com.longx.intelligent.app.imessage.server.data.Channel">
+        <result column="channelImessageId" property="imessageId"/>
+        <result column="channelImessageIdUser" property="imessageIdUser"/>
+        <result column="email" property="email"/>
+        <result column="username" property="username"/>
+        <result column="sex" property="sex"/>
+        <result column="associated" property="associated"/>
+        <result column="note" property="note"/>
+        <association property="avatar" javaType="com.longx.intelligent.app.imessage.server.data.Avatar">
+            <id column="avatarHash" property="hash"/>
+            <result column="avatarImessageId" property="imessageId"/>
+            <result column="avatarExtension" property="extension"/>
+            <result column="avatarTime" property="time"/>
+        </association>
+        <association property="firstRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="1st_level_adcode" property="adcode"/>
+            <result column="d1lName" property="name"/>
+        </association>
+        <association property="secondRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="2nd_level_adcode" property="adcode"/>
+            <result column="d2lName" property="name"/>
+        </association>
+        <association property="thirdRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="3rd_level_adcode" property="adcode"/>
+            <result column="d3lName" property="name"/>
+        </association>
+    </resultMap>
+
+    <insert id="insertGroupChannelAssociation">
+        INSERT INTO group_channel_association(association_id, group_channel_id, owner, requester, request_message, request_time, accept_time, is_active, invite_uuid)
+        VALUES (#{associationId}, #{groupChannelId}, #{owner}, #{requester}, #{requestMessage}, #{requestTime}, #{acceptTime}, true, #{inviteUuid})
+    </insert>
+
+    <update id="updateGroupChannelName">
+        UPDATE group_channel SET name = #{newName} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
+    </update>
+
+    <select id="findGroupChannelIdUserLastChangeTime" resultType="java.util.Date">
+        SELECT group_channel_id_user_last_change_time FROM group_channel WHERE group_channel_id = #{groupChannelId};
+    </select>
+
+    <update id="updateGroupChannelIdUserLastChangeTime">
+        UPDATE group_channel SET group_channel_id_user_last_change_time = #{lastChangeTime} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
+    </update>
+
+    <update id="updateGroupChannelIdUser">
+        UPDATE group_channel SET group_channel_id_user = #{newGroupChannelIdUser} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
+    </update>
+
+    <update id="changeRegion">
+        UPDATE group_channel SET 1st_level_adcode = #{firstRegionAdcode},2nd_level_adcode = #{secondRegionAdcode},3rd_level_adcode = #{thirdRegionAdcode} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
+    </update>
+
+    <insert id="updateGroupChannelAvatar">
+        INSERT INTO group_channel_avatar(hash, group_channel_id, data, extension, time)
+        VALUES (#{avatar.hash}, #{avatar.groupChannelId}, #{data}, #{avatar.extension}, #{avatar.time})
+    </insert>
+
+    <update id="updateAvatarHashWithGroupChannel">
+        UPDATE group_channel SET avatar_hash = #{avatarHash} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
+    </update>
+
+    <select id="findAvatar">
+        SELECT * FROM group_channel_avatar
+        WHERE hash = #{avatarHash}
+        ORDER BY time DESC
+            LIMIT 1;
+    </select>
+
+    <select id="findAvatarData">
+        SELECT data FROM group_channel_avatar
+        WHERE hash = #{avatarHash}
+        ORDER BY time DESC
+            LIMIT 1;
+    </select>
+
+    <update id="updateGroupChannelTagOrder">
+        UPDATE group_channel_tag SET `order` = #{order} WHERE tag_id = #{tagId} AND imessage_id = #{imessageId} AND is_active = true;
+    </update>
+
+    <update id="updateGroupChannelTagToInactive">
+        UPDATE group_channel_tag SET is_active = false WHERE tag_id = #{tagId} AND imessage_id = #{imessageId} AND is_active = true;
+    </update>
+
+    <delete id="deleteAllTagGroupChannel">
+        DELETE FROM group_channel_tag_group_channel
+        WHERE tag_id IN (
+            SELECT tag_id
+            FROM (
+                     SELECT gctgc.tag_id
+                     FROM group_channel_tag_group_channel gctgc
+                              INNER JOIN group_channel_tag gct ON gct.tag_id = gctgc.tag_id
+                     WHERE gct.tag_id = #{tagId} AND gct.imessage_id = #{imessageId}
+                 ) AS subquery
+        );
+    </delete>
+
+    <update id="updateGroupChannelTagName">
+        UPDATE group_channel_tag SET name = #{name} WHERE tag_id = #{tagId} AND imessage_id = #{imessageId} AND is_active = true;
+    </update>
+
+    <delete id="deleteTagGroupChannel">
+        DELETE FROM group_channel_tag_group_channel
+        WHERE tag_id IN (
+            SELECT tag_id
+            FROM (
+                     SELECT gctgc.tag_id
+                     FROM group_channel_tag_group_channel gctgc
+                              INNER JOIN group_channel_tag gct ON gct.tag_id = gctgc.tag_id
+                     WHERE gct.tag_id = #{tagId} AND gct.imessage_id = #{imessageId} AND gctgc.group_channel_id = #{groupChannelId}
+                 ) AS subquery
+        ) AND group_channel_id = #{groupChannelId};
+    </delete>
+
+    <update id="updateGroupJoinVerification">
+        UPDATE group_channel SET group_join_verification = #{joinVerification} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
+    </update>
+
+    <select id="isGroupJoinNeedVerification">
+        SELECT group_join_verification
+        FROM group_channel
+        WHERE group_channel_id = #{groupChannelId}
+    </select>
+</mapper>

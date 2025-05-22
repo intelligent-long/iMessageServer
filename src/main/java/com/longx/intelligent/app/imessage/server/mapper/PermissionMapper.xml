@@ -1,0 +1,189 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.longx.intelligent.app.imessage.server.mapper.PermissionMapper">
+
+    <insert id="insertOrUpdateUserProfileVisibility">
+        INSERT INTO user_profile_visibility(imessage_id, email_visible, sex_visible, region_visible)
+        VALUES (#{imessageId}, #{emailVisible}, #{sexVisible}, #{regionVisible})
+        ON DUPLICATE KEY UPDATE
+            email_visible = VALUES(email_visible),
+            sex_visible = VALUES(sex_visible),
+            region_visible = VALUES(region_visible);
+    </insert>
+
+    <select id="findUserProfileVisibilityByImessageId" resultType="com.longx.intelligent.app.imessage.server.data.User$UserProfileVisibility">
+        SELECT email_visible emailVisible, sex_visible sexVisible, region_visible regionVisible
+        FROM user_profile_visibility
+        WHERE imessage_id = #{imessageId}
+    </select>
+
+    <select id="findUserProfileVisibilityByImessageIdUser" resultType="com.longx.intelligent.app.imessage.server.data.User$UserProfileVisibility">
+        SELECT email_visible emailVisible, sex_visible sexVisible, region_visible regionVisible
+        FROM user_profile_visibility upv
+        INNER JOIN user u ON u.imessage_id = upv.imessage_id
+        WHERE u.imessage_id_user = #{imessageIdUser}
+    </select>
+
+    <select id="findUserProfileVisibilityByEmail" resultType="com.longx.intelligent.app.imessage.server.data.User$UserProfileVisibility">
+        SELECT email_visible emailVisible, sex_visible sexVisible, region_visible regionVisible
+        FROM user_profile_visibility upv
+        INNER JOIN user u ON u.imessage_id = upv.imessage_id
+        WHERE u.email = #{email}
+    </select>
+
+    <insert id="insertOrUpdateWaysToFindMe">
+        INSERT INTO ways_to_find_me(imessage_id, by_imessage_id, by_email)
+        VALUES (#{imessageId}, #{byImessageId}, #{byEmail})
+        ON DUPLICATE KEY UPDATE
+            by_imessage_id = VALUES(by_imessage_id),
+            by_email = VALUES(by_email)
+    </insert>
+
+    <select id="findWaysToFindMeByImessageId" resultType="com.longx.intelligent.app.imessage.server.data.User$WaysToFindMe">
+        SELECT by_imessage_id byImessageIdUser, by_email byEmail
+        FROM ways_to_find_me
+        WHERE imessage_id = #{imessage_id}
+    </select>
+    
+    <select id="findWaysToFindMeByImessageIdUser" resultType="com.longx.intelligent.app.imessage.server.data.User$WaysToFindMe">
+        SELECT by_imessage_id byImessageIdUser, by_email byEmail
+        FROM ways_to_find_me wtfm
+        INNER JOIN user u ON u.imessage_id = wtfm.imessage_id
+        WHERE u.imessage_id_user = #{imessageIdUser}
+    </select>
+
+    <select id="findWaysToFindMeByEmail" resultType="com.longx.intelligent.app.imessage.server.data.User$WaysToFindMe">
+        SELECT by_imessage_id byImessageIdUser, by_email byEmail
+        FROM ways_to_find_me wtfm
+        INNER JOIN user u ON u.imessage_id = wtfm.imessage_id
+        WHERE u.email = #{email}
+    </select>
+
+    <insert id="insertOrUpdateAllowChatMessage">
+        INSERT INTO allow_chat_message(imessage_id, channel_imessage_id, allow_voice, allow_notice)
+        VALUES (#{imessageId}, #{channelImessageId}, #{chatMessageAllow.allowVoice}, #{chatMessageAllow.allowNotice})
+        ON DUPLICATE KEY UPDATE
+            allow_voice = VALUES(allow_voice),
+            allow_notice = VALUES(allow_notice);
+    </insert>
+
+    <select id="findChatMessageAllow" resultType="com.longx.intelligent.app.imessage.server.data.ChatMessageAllow">
+        SELECT allow_voice allowVoice, allow_notice allowNotice
+        FROM allow_chat_message
+        WHERE imessage_id = #{imessageId} AND channel_imessage_id = #{channelImessageId}
+    </select>
+
+    <delete id="deleteChatMessageAllow">
+        DELETE FROM allow_chat_message WHERE imessage_id = #{imessageId} AND channel_imessage_id = #{channelImessageId}
+    </delete>
+
+    <resultMap id="BroadcastChannelPermissionMap" type="com.longx.intelligent.app.imessage.server.data.BroadcastChannelPermission">
+        <result property="permission" column="permission"/>
+        <collection property="excludeConnectedChannels" ofType="string">
+            <result column="channel_id"/>
+        </collection>
+    </resultMap>
+
+    <select id="findBroadcastChannelPermission" resultMap="BroadcastChannelPermissionMap">
+        SELECT bcp.permission, bcpecc.channel_id
+        FROM broadcast_channel_permission bcp
+        LEFT JOIN broadcast_channel_permission_exclude_connected_channels bcpecc ON bcp.imessage_id = bcpecc.imessage_id
+        WHERE bcp.imessage_id = #{imessageId}
+    </select>
+
+    <insert id="insertOrUpdateBroadcastChannelPermission">
+        INSERT INTO broadcast_channel_permission(imessage_id, permission)
+        VALUES (#{imessageId}, #{permission}) ON DUPLICATE KEY
+        UPDATE permission = #{permission}
+    </insert>
+
+    <insert id="insertBroadcastChannelPermissionExcludeConnectedChannels">
+        INSERT INTO broadcast_channel_permission_exclude_connected_channels(imessage_id, channel_id)
+        VALUES
+        <foreach collection="excludeConnectedChannels" item="channelId" separator=",">
+            (#{imessageId}, #{channelId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteBroadcastChannelPermission">
+        DELETE FROM broadcast_channel_permission
+        WHERE imessage_id = #{imessageId}
+    </delete>
+
+    <delete id="deleteAllBroadcastChannelPermissionExcludeConnectedChannels">
+        DELETE FROM broadcast_channel_permission_exclude_connected_channels
+        WHERE imessage_id = #{imessageId}
+    </delete>
+
+    <delete id="deleteBroadcastChannelPermissionExcludeConnectedChannel">
+        DELETE FROM broadcast_channel_permission_exclude_connected_channels
+        WHERE imessage_id = #{imessageId} AND channel_id = #{channelId}
+    </delete>
+
+    <select id="findExcludeBroadcastChannels">
+        SELECT channel_id
+        FROM exclude_broadcast_channel
+        WHERE imessage_id = #{imessageId}
+    </select>
+
+    <insert id="insertExcludeBroadcastChannels">
+        INSERT INTO exclude_broadcast_channel(imessage_id, channel_id)
+        VALUES
+        <foreach collection="excludeBroadcastChannelIds" item="channelId" separator=",">
+            (#{imessageId}, #{channelId})
+        </foreach>
+    </insert>
+    
+    <delete id="deleteAllExcludeBroadcastChannels">
+        DELETE FROM exclude_broadcast_channel
+        WHERE imessage_id = #{imessageId}
+    </delete>
+
+    <delete id="deleteExcludeBroadcastChannel">
+        DELETE FROM exclude_broadcast_channel
+        WHERE imessage_id = #{imessageId} AND channel_id = #{channelId}
+    </delete>
+
+    <insert id="insertOrUpdateBroadcastPermission">
+        INSERT INTO broadcast_permission(broadcast_id, permission)
+        VALUES (#{broadcastId}, #{permission}) ON DUPLICATE KEY
+            UPDATE permission = #{permission}
+    </insert>
+
+    <insert id="insertBroadcastPermissionExcludeConnectedChannels">
+        INSERT INTO broadcast_permission_exclude_connected_channels(broadcast_id, channel_id)
+        VALUES
+        <foreach collection="excludeConnectedChannels" item="channelId" separator=",">
+            (#{broadcastId}, #{channelId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteAllBroadcastPermissionExcludeConnectedChannels">
+        DELETE FROM broadcast_permission_exclude_connected_channels
+        WHERE broadcast_id = #{broadcastId}
+    </delete>
+
+    <delete id="deleteALlBroadcastPermissionExcludeConnectedChannels">
+        DELETE FROM broadcast_permission_exclude_connected_channels
+        WHERE broadcast_id IN (
+            SELECT broadcast_id
+            FROM broadcast
+            WHERE imessage_id = #{imessageId}
+        )
+          AND channel_id = #{channelId}
+    </delete>
+
+    <resultMap id="BroadcastPermissionMap" type="com.longx.intelligent.app.imessage.server.data.BroadcastPermission">
+        <result property="broadcastId" column="broadcast_id"/>
+        <result property="permission" column="permission"/>
+        <collection property="excludeConnectedChannels" ofType="string">
+            <result column="channel_id"/>
+        </collection>
+    </resultMap>
+
+    <select id="findBroadcastPermission" resultMap="BroadcastPermissionMap">
+        SELECT bp.broadcast_id, bp.permission, bpecc.channel_id
+        FROM broadcast_permission bp
+                 LEFT JOIN broadcast_permission_exclude_connected_channels bpecc ON bp.broadcast_id = bpecc.broadcast_id
+        WHERE bp.broadcast_id = #{broadcastId}
+    </select>
+</mapper>

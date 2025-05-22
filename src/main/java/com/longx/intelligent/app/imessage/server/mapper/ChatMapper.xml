@@ -1,0 +1,44 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.longx.intelligent.app.imessage.server.mapper.ChatMapper">
+
+    <insert id="insertTextChatMessage">
+        INSERT INTO chat_message(uuid, type, `from`, `to`, time, text)
+        VALUES (#{uuid}, #{type}, #{from}, #{to}, #{time}, #{text})
+    </insert>
+
+    <insert id="insertImageChatMessage">
+        INSERT INTO chat_message(uuid, type, `from`, `to`, time, file_name, image)
+        VALUES (#{chatMessage.uuid}, #{chatMessage.type}, #{chatMessage.from}, #{chatMessage.to}, #{chatMessage.time}, #{chatMessage.fileName}, #{image})
+    </insert>
+
+    <insert id="insertFileChatMessage">
+        INSERT INTO  chat_message(uuid, type, `from`, `to`, time, file_name, file)
+        VALUES (#{chatMessage.uuid}, #{chatMessage.type}, #{chatMessage.from}, #{chatMessage.to}, #{chatMessage.time}, #{chatMessage.fileName}, #{file})
+    </insert>
+
+    <insert id="insertVideoChatMessage">
+        INSERT INTO chat_message(uuid, type, `from`, `to`, time, file_name, video)
+        VALUES (#{chatMessage.uuid}, #{chatMessage.type}, #{chatMessage.from}, #{chatMessage.to}, #{chatMessage.time}, #{chatMessage.fileName}, #{video})
+    </insert>
+
+    <insert id="insertVoiceChatMessage">
+        INSERT INTO chat_message(uuid, type, `from`, `to`, time, voice)
+        VALUES (#{chatMessage.uuid}, #{chatMessage.type}, #{chatMessage.from}, #{chatMessage.to}, #{chatMessage.time}, #{voice})
+    </insert>
+    
+    <insert id="insertUnsendChatMessage">
+        INSERT INTO chat_message(uuid, type, `from`, `to`, time, unsend_message_uuid)
+        VALUES (#{uuid}, #{type}, #{from}, #{to}, #{time}, #{unsendMessageUuid})
+    </insert>
+
+    <insert id="insertExpiredMessageChatMessage">
+        INSERT INTO chat_message(uuid, type, `from`, `to`, time, expired_message_count)
+        VALUES (#{uuid}, #{type}, #{from}, #{to}, #{time}, #{expiredMessageCount})
+    </insert>
+
+    <select id="findChatMessage" resultType="com.longx.intelligent.app.imessage.server.data.ChatMessage">
+        SELECT uuid, type, `from`, `to`, time, text, file_name fileName, unsend_message_uuid unsendMessageUuid, expired_message_count expiredMessageCount
+        FROM chat_message
+        WHERE `to` = #{receiver} AND uuid = #{uuid}
+    </select>
+</mapper>

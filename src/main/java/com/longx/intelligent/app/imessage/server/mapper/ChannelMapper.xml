@@ -1,0 +1,239 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.longx.intelligent.app.imessage.server.mapper.ChannelMapper">
+
+    <select id="isChannelAssociated" resultType="boolean">
+        SELECT IF(EXISTS(
+            SELECT *
+            FROM channel_association
+            WHERE imessage_id = #{imessageId} AND channel_imessage_id = #{channelImessageId} AND is_active = true
+        ), 1, 0)
+    </select>
+
+    <insert id="insertChannelAssociation">
+        INSERT INTO channel_association(association_id, imessage_id, channel_imessage_id, is_requester, request_time, accept_time, is_active)
+        VALUES (#{associationId}, #{imessageId}, #{channelImessageId}, #{isRequester}, #{requestTime}, #{acceptTime}, #{isActive})
+    </insert>
+
+    <resultMap id="ChannelAssociationMap" type="com.longx.intelligent.app.imessage.server.data.ChannelAssociation">
+        <id column="association_id" property="associationId"/>
+        <result column="imessageId" property="imessageId"/>
+        <result column="channel_imessage_id" property="channelImessageId"/>
+        <result column="is_requester" property="isRequester"/>
+        <result column="request_time" property="requestTime"/>
+        <result column="accept_time" property="acceptTime"/>
+        <result column="is_active" property="isActive"/>
+        <association property="channel" javaType="com.longx.intelligent.app.imessage.server.data.Channel" resultMap="ChannelMap"/>
+    </resultMap>
+
+    <resultMap id="ChannelMap" type="com.longx.intelligent.app.imessage.server.data.Channel">
+        <result column="channelImessageId" property="imessageId"/>
+        <result column="channelImessageIdUser" property="imessageIdUser"/>
+        <result column="email" property="email"/>
+        <result column="username" property="username"/>
+        <result column="sex" property="sex"/>
+        <result column="associated" property="associated"/>
+        <result column="note" property="note"/>
+        <association property="avatar" javaType="com.longx.intelligent.app.imessage.server.data.Avatar">
+            <id column="avatarHash" property="hash"/>
+            <result column="avatarImessageId" property="imessageId"/>
+            <result column="avatarExtension" property="extension"/>
+            <result column="avatarTime" property="time"/>
+        </association>
+        <association property="firstRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="1st_level_adcode" property="adcode"/>
+            <result column="d1lName" property="name"/>
+        </association>
+        <association property="secondRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="2nd_level_adcode" property="adcode"/>
+            <result column="d2lName" property="name"/>
+        </association>
+        <association property="thirdRegion" javaType="com.longx.intelligent.app.imessage.server.data.Region">
+            <id column="3rd_level_adcode" property="adcode"/>
+            <result column="d3lName" property="name"/>
+        </association>
+    </resultMap>
+
+    <select id="findAllChannelAssociations" resultMap="ChannelAssociationMap">
+        SELECT *, ca.imessage_id imessageId, ca.channel_imessage_id channelImessageId,
+               u.imessage_id_user channelImessageIdUser, u.email email, u.username username,
+               a.hash avatarHash, a.imessage_id avatarImessageId, a.extension avatarExtension, a.time avatarTime,
+               u.sex sex, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, true associated, cn.note note
+        FROM channel_association ca
+                 INNER JOIN user u ON ca.channel_imessage_id = u.imessage_id
+                 LEFT JOIN amap_district_1st_level d1l ON u.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON u.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON u.3rd_level_adcode = d3l.3rd_level_adcode
+                 LEFT JOIN avatar a ON u.avatar_hash = a.hash
+                 LEFT JOIN channel_note cn ON ca.imessage_id = cn.imessage_id AND ca.channel_imessage_id = cn.channel_imessage_id AND cn.is_active = true
+        WHERE ca.imessage_id = #{imessageId} AND ca.is_active = true;
+    </select>
+
+    <select id="findChannelByImessageId" resultMap="ChannelMap">
+        SELECT *, u.imessage_id channelImessageId, u.imessage_id_user channelImessageIdUser, u.email email, u.username username, u.sex sex,
+            a.hash avatarHash, a.imessage_id avatarImessageId, a.extension avatarExtension, a.time avatarTime,
+            d1l.name d1lName, d2l.name d2lName, d3l.name d3lName,
+            CASE
+                WHEN ca.imessage_id IS NOT NULL THEN true
+                ELSE false
+                END as associated,
+            cn.note note
+        FROM user u
+        LEFT JOIN channel_association ca ON u.imessage_id = ca.channel_imessage_id AND ca.imessage_id = #{currentUserId} AND ca.channel_imessage_id = u.imessage_id AND ca.is_active = true
+        LEFT JOIN amap_district_1st_level d1l ON u.1st_level_adcode = d1l.1st_level_adcode
+        LEFT JOIN amap_district_2nd_level d2l ON u.2nd_level_adcode = d2l.2nd_level_adcode
+        LEFT JOIN amap_district_3rd_level d3l ON u.3rd_level_adcode = d3l.3rd_level_adcode
+        LEFT JOIN avatar a ON u.avatar_hash = a.hash
+        LEFT JOIN channel_note cn ON #{currentUserId} = cn.imessage_id AND u.imessage_id = cn.channel_imessage_id AND cn.is_active = true
+        WHERE u.imessage_id = #{channelImessageId};
+    </select>
+
+    <select id="findChannelByImessageIdUser" resultMap="ChannelMap">
+        SELECT *, u.imessage_id channelImessageId, u.imessage_id_user channelImessageIdUser, u.email email, u.username username, u.sex sex,
+               a.hash avatarHash, a.imessage_id avatarImessageId, a.extension avatarExtension, a.time avatarTime,
+               d1l.name d1lName, d2l.name d2lName, d3l.name d3lName,
+               CASE
+                   WHEN ca.imessage_id IS NOT NULL THEN true
+                   ELSE false
+                   END as associated,
+               cn.note note
+        FROM user u
+                 LEFT JOIN channel_association ca ON u.imessage_id = ca.channel_imessage_id AND ca.imessage_id = #{currentUserId} AND ca.channel_imessage_id = u.imessage_id AND ca.is_active = true
+                 LEFT JOIN amap_district_1st_level d1l ON u.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON u.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON u.3rd_level_adcode = d3l.3rd_level_adcode
+                 LEFT JOIN avatar a ON u.avatar_hash = a.hash
+                 LEFT JOIN channel_note cn ON #{currentUserId} = cn.imessage_id AND u.imessage_id = cn.channel_imessage_id AND cn.is_active = true
+        WHERE u.imessage_id_user = #{channelImessageIdUser};
+    </select>
+
+    <select id="findChannelByEmail" resultMap="ChannelMap">
+        SELECT *, u.imessage_id channelImessageId, u.imessage_id_user channelImessageIdUser, u.email email, u.username username, u.sex sex,
+               a.hash avatarHash, a.imessage_id avatarImessageId, a.extension avatarExtension, a.time avatarTime,
+               d1l.name d1lName, d2l.name d2lName, d3l.name d3lName,
+               CASE
+                   WHEN ca.imessage_id IS NOT NULL THEN true
+                   ELSE false
+                   END as associated,
+               cn.note note
+        FROM user u
+                 LEFT JOIN channel_association ca ON u.imessage_id = ca.channel_imessage_id AND ca.imessage_id = #{imessageId} AND ca.channel_imessage_id = u.imessage_id AND ca.is_active = true
+                 LEFT JOIN amap_district_1st_level d1l ON u.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON u.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON u.3rd_level_adcode = d3l.3rd_level_adcode
+                 LEFT JOIN avatar a ON u.avatar_hash = a.hash
+                 LEFT JOIN channel_note cn ON #{imessageId} = cn.imessage_id AND u.imessage_id = cn.channel_imessage_id AND cn.is_active = true
+        WHERE u.email = #{channelEmail};
+    </select>
+
+    <update id="updateChannelAssociationToInactive">
+        UPDATE channel_association SET is_active = false
+        WHERE imessage_id = #{imessageId} AND channel_imessage_id = #{channelImessageId} AND is_active = true
+    </update>
+
+    <update id="updateChannelNoteToInactive">
+        UPDATE channel_note SET is_active = false
+        WHERE imessage_id = #{imessageId} AND channel_imessage_id = #{channelImessageId} AND is_active = true
+    </update>
+
+    <insert id="insertChannelNote">
+        INSERT INTO channel_note(imessage_id, channel_imessage_id, note, is_active)
+        VALUES (#{imessageId}, #{channelImessageId}, #{note}, true)
+    </insert>
+
+    <select id="findChannelNote" resultType="string">
+        SELECT note
+        FROM channel_note
+        WHERE imessage_id = #{imessageId} AND channel_imessage_id = #{channelImessageId} AND is_active = true;
+    </select>
+
+    <insert id="insertChannelTag">
+        INSERT INTO channel_tag(tag_id, imessage_id, name, `order`, is_active)
+        VALUES (#{tagId}, #{imessageId}, #{name}, #{order}, true)
+    </insert>
+
+    <resultMap id="ChannelTagMap" type="com.longx.intelligent.app.imessage.server.data.ChannelTag">
+        <id column="tag_id" property="tagId"/>
+        <result column="imessageId" property="imessageId"/>
+        <result column="name" property="name"/>
+        <result column="order" property="order"/>
+        <collection property="channelImessageIdList" ofType="string">
+            <result column="channelImessageId"/>
+        </collection>
+    </resultMap>
+
+    <select id="findAllChannelTags" resultMap="ChannelTagMap">
+        SELECT ct.tag_id, ct.imessage_id imessageId, ct.name, ct.`order`, ctc.channel_imessage_id channelImessageId
+        FROM channel_tag ct
+        LEFT JOIN channel_tag_channel ctc ON ct.tag_id = ctc.tag_id
+        WHERE ct.imessage_id = #{imessageId} AND ct.is_active = true;
+    </select>
+
+    <select id="findOneChannelTag" resultMap="ChannelTagMap">
+        SELECT ct.tag_id, ct.imessage_id imessageId, ct.name, ct.`order`, ctc.channel_imessage_id channelImessageId
+        FROM channel_tag ct
+        LEFT JOIN channel_tag_channel ctc ON ct.tag_id = ctc.tag_id
+        WHERE ct.imessage_id = #{imessageId} AND ct.tag_id = #{tagId} AND ct.is_active = true;
+    </select>
+
+    <select id="findChannelTagMaxOrder">
+        SELECT MAX(`order`) AS max_order
+        FROM channel_tag
+        WHERE imessage_id = #{imessageId} AND is_active = true;
+    </select>
+
+    <update id="updateChannelTagName">
+        UPDATE channel_tag SET name = #{name} WHERE tag_id = #{tagId} AND imessage_id = #{imessageId} AND is_active = true;
+    </update>
+
+    <update id="updateChannelTagOrder">
+        UPDATE channel_tag SET `order` = #{order} WHERE tag_id = #{tagId} AND imessage_id = #{imessageId} AND is_active = true;
+    </update>
+
+    <insert id="insertTagChannel">
+        INSERT INTO channel_tag_channel(tag_id, channel_imessage_id)
+        VALUES (#{tagId}, #{channelImessageId})
+    </insert>
+
+    <delete id="deleteTagChannel">
+        DELETE FROM channel_tag_channel
+        WHERE tag_id IN (
+            SELECT tag_id
+            FROM (
+                     SELECT ctc.tag_id
+                     FROM channel_tag_channel ctc
+                     INNER JOIN channel_tag ct ON ct.tag_id = ctc.tag_id
+                     WHERE ct.tag_id = #{tagId} AND ct.imessage_id = #{imessageId} AND ctc.channel_imessage_id = #{channelImessageId}
+                 ) AS subquery
+        ) AND channel_imessage_id = #{channelImessageId};
+    </delete>
+
+    <delete id="deleteTagChannelOfAll">
+        DELETE FROM channel_tag_channel
+        WHERE tag_id IN (
+            SELECT tag_id
+            FROM (
+                     SELECT ctc.tag_id
+                     FROM channel_tag_channel ctc
+                              INNER JOIN channel_tag ct ON ct.tag_id = ctc.tag_id
+                     WHERE ct.imessage_id = #{imessageId} AND ctc.channel_imessage_id = #{channelImessageId}
+                 ) AS subquery
+        ) AND channel_imessage_id = #{channelImessageId};
+    </delete>
+
+    <update id="updateChannelTagToInactive">
+        UPDATE channel_tag SET is_active = false WHERE tag_id = #{tagId} AND imessage_id = #{imessageId} AND is_active = true;
+    </update>
+
+    <delete id="deleteAllTagChannel">
+        DELETE FROM channel_tag_channel
+        WHERE tag_id IN (
+            SELECT tag_id
+            FROM (
+                     SELECT ctc.tag_id
+                     FROM channel_tag_channel ctc
+                              INNER JOIN channel_tag ct ON ct.tag_id = ctc.tag_id
+                     WHERE ct.tag_id = #{tagId} AND ct.imessage_id = #{imessageId}
+                 ) AS subquery
+        );
+    </delete>
+</mapper>
