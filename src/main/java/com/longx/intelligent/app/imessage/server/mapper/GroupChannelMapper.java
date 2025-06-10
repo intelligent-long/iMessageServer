@@ -70,4 +70,6 @@ public interface GroupChannelMapper {
     int updateGroupJoinVerification(String groupChannelId, Boolean joinVerification, String owner);
 
     Boolean isGroupJoinNeedVerification(String groupChannelId);
+
+    int setGroupChannelAssociationToInactive(String groupChannelId, String requester);
 }

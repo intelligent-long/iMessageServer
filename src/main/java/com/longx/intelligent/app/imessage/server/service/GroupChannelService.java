@@ -235,4 +235,8 @@ public class GroupChannelService {
     public boolean isInInviting(String inviter, String invitee, String groupChannelId) {
         return redisOperationService.GROUP_CHANNEL_ADDITION.isInInviting(inviter, invitee, groupChannelId);
     }
+
+    public boolean setGroupChannelAssociationToInactive(String groupChannelId, String requester){
+        return groupChannelMapper.setGroupChannelAssociationToInactive(groupChannelId, requester) == 1;
+    }
 }

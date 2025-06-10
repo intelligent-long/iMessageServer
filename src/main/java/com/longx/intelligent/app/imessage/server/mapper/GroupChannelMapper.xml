@@ -219,6 +219,10 @@
         VALUES (#{associationId}, #{groupChannelId}, #{owner}, #{requester}, #{requestMessage}, #{requestTime}, #{acceptTime}, true, #{inviteUuid})
     </insert>
 
+    <update id="setGroupChannelAssociationToInactive">
+        UPDATE group_channel_association SET is_active = false WHERE group_channel_id = #{groupChannelId} AND requester = #{requester} AND is_active = true
+    </update>
+
     <update id="updateGroupChannelName">
         UPDATE group_channel SET name = #{newName} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
     </update>

@@ -708,4 +708,29 @@ public class GroupChannelController {
         simpMessagingTemplate.convertAndSendToUser(postBody.getInvitee().getImessageId(), StompDestinations.GROUP_CHANNEL_ADDITIONS_NOT_VIEW_COUNT_UPDATE, "");
         return OperationStatus.success();
     }
+
+    @PostMapping("disconnect/{groupChannelId}")
+    public OperationStatus disconnectChannel(@PathVariable("groupChannelId") String groupChannelId, HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        if(groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getOwner().equals(currentUser.getImessageId())){
+            return new OperationStatus(-101, "你是群主，无法退出群聊。请先转让群主身份再尝试退出。");
+        }
+        if(!groupChannelService.isGroupChannelAssociated(groupChannelId, currentUser.getImessageId())){
+            return OperationStatus.failure();
+        }
+        if(!groupChannelService.setGroupChannelAssociationToInactive(groupChannelId, currentUser.getImessageId())){
+            return OperationStatus.failure();
+        }
+        List<String> associatedImessageIds = new ArrayList<>();
+        associatedImessageIds.add(currentUser.getImessageId());
+        groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
+            associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
+        });
+        associatedImessageIds.forEach(associatedImessageId -> {
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_NOT_VIEW_COUNT_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
+        });
+        return OperationStatus.success();
+    }
 }
