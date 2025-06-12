@@ -315,4 +315,26 @@ public class RedisKeys {
         }
 
     }
+
+    public static class GroupChannelDisconnection{
+        private static final String BASE_PATH = "group_channel_disconnection";
+
+        public static class DisconnectionHashKey {
+            public static final String PASSIVE = "passive";
+            public static final String BY_WHOM = "by_whom";
+            public static final String TIME = "time";
+            public static final String IS_VIEWED = "is_viewed";
+        }
+
+        private static final String DISCONNECTION = BASE_PATH + ":{GROUP_CHANNEL_ID}:{CHANNEL_ID}";
+        public static String disconnection(String groupChannelId, String channelId){
+            return DISCONNECTION.replace("{GROUP_CHANNEL_ID}", groupChannelId).replace("{CHANNEL_ID}", channelId);
+        }
+
+        private static final String DISCONNECTION_PREFIX = BASE_PATH + ":{GROUP_CHANNEL_ID}:";
+        public static String getDisconnectionPrefix(String groupChannelId) {
+            return DISCONNECTION_PREFIX.replace("{GROUP_CHANNEL_ID}", groupChannelId);
+        }
+
+    }
 }

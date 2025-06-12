@@ -52,6 +52,8 @@ public class GroupChannelController {
     private ChannelService channelService;
     @Autowired
     private UserService userService;
+    @Autowired
+    private RedisOperationService redisOperationService;
 
     @GetMapping("find/group_channel_id/{groupChannelId}")
     public OperationData findGroupChannelById(@PathVariable String groupChannelId, @RequestParam(defaultValue = "idUser") String queryType, HttpSession session){
@@ -710,6 +712,7 @@ public class GroupChannelController {
     }
 
     @PostMapping("disconnect/{groupChannelId}")
+    @Transactional
     public OperationStatus disconnectChannel(@PathVariable("groupChannelId") String groupChannelId, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         if(groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getOwner().equals(currentUser.getImessageId())){
@@ -719,7 +722,10 @@ public class GroupChannelController {
             return OperationStatus.failure();
         }
         if(!groupChannelService.setGroupChannelAssociationToInactive(groupChannelId, currentUser.getImessageId())){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return OperationStatus.failure();
+        }else {
+            redisOperationService.GROUP_CHANNEL_DISCONNECTION.saveDisconnection(groupChannelId, currentUser.getImessageId(), null);
         }
         List<String> associatedImessageIds = new ArrayList<>();
         associatedImessageIds.add(currentUser.getImessageId());
@@ -735,6 +741,7 @@ public class GroupChannelController {
     }
 
     @PostMapping("disconnect/manage/{groupChannelId}")
+    @Transactional
     public OperationStatus manageGroupChannelDisconnectChannel(@PathVariable("groupChannelId") String groupChannelId, @RequestBody ManageGroupChannelDisconnectPostBody postBody, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         String owner = groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getOwner();
@@ -754,7 +761,10 @@ public class GroupChannelController {
         }
         for (String channelId : postBody.getChannelIds()) {
             if(!groupChannelService.setGroupChannelAssociationToInactive(groupChannelId, channelId)){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 return OperationStatus.failure();
+            }else {
+                redisOperationService.GROUP_CHANNEL_DISCONNECTION.saveDisconnection(groupChannelId, channelId, currentUser.getImessageId());
             }
         }
         List<String> associatedImessageIds = new ArrayList<>();
@@ -768,5 +778,18 @@ public class GroupChannelController {
             simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
         });
         return OperationStatus.success();
+    }
+
+    @GetMapping("group_channel_disconnections")
+    public OperationData getGroupChannelDisconnections(HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        List<GroupChannel> allAssociatedGroupChannels = groupChannelService.findAllAssociatedGroupChannels(currentUser.getImessageId());
+        List<GroupChannelDisconnection> disconnections = new ArrayList<>();
+        allAssociatedGroupChannels.forEach(groupChannel -> {
+            redisOperationService.GROUP_CHANNEL_DISCONNECTION.getDisconnections(groupChannel.getGroupChannelId()).forEach(groupChannelDisconnection -> {
+                if(!groupChannelDisconnection.isViewed()) disconnections.add(groupChannelDisconnection);
+            });
+        });
+        return OperationData.success(disconnections);
     }
 }
