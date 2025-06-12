@@ -733,4 +733,33 @@ public class GroupChannelController {
         });
         return OperationStatus.success();
     }
+
+    @PostMapping("disconnect/manage/{groupChannelId}")
+    public OperationStatus manageGroupChannelDisconnectChannel(@PathVariable("groupChannelId") String groupChannelId, @RequestBody ManageGroupChannelDisconnectPostBody postBody, HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        if(!groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getOwner().equals(currentUser.getImessageId())){
+            return new OperationStatus(-101, "请联系群管理员进行频道管理。");
+        }
+        for (String channelId : postBody.getChannelIds()) {
+            if(!groupChannelService.isGroupChannelAssociated(groupChannelId, channelId)){
+                return new OperationStatus(-102, "参数异常。");
+            }
+        }
+        for (String channelId : postBody.getChannelIds()) {
+            if(!groupChannelService.setGroupChannelAssociationToInactive(groupChannelId, channelId)){
+                return OperationStatus.failure();
+            }
+        }
+        List<String> associatedImessageIds = new ArrayList<>();
+        associatedImessageIds.add(currentUser.getImessageId());
+        groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
+            associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
+        });
+        associatedImessageIds.forEach(associatedImessageId -> {
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_NOT_VIEW_COUNT_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
+        });
+        return OperationStatus.success();
+    }
 }
