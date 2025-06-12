@@ -737,13 +737,20 @@ public class GroupChannelController {
     @PostMapping("disconnect/manage/{groupChannelId}")
     public OperationStatus manageGroupChannelDisconnectChannel(@PathVariable("groupChannelId") String groupChannelId, @RequestBody ManageGroupChannelDisconnectPostBody postBody, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
-        if(!groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getOwner().equals(currentUser.getImessageId())){
+        String owner = groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getOwner();
+        if(!owner.equals(currentUser.getImessageId())){
             return new OperationStatus(-101, "请联系群管理员进行频道管理。");
+        }
+        if(postBody.getChannelIds().isEmpty()){
+            return new OperationStatus(-102, "参数异常。");
         }
         for (String channelId : postBody.getChannelIds()) {
             if(!groupChannelService.isGroupChannelAssociated(groupChannelId, channelId)){
                 return new OperationStatus(-102, "参数异常。");
             }
+        }
+        if(postBody.getChannelIds().contains(currentUser.getImessageId()) || postBody.getChannelIds().contains(owner)){
+            return new OperationStatus(-103, "不能移除自己或管理员。");
         }
         for (String channelId : postBody.getChannelIds()) {
             if(!groupChannelService.setGroupChannelAssociationToInactive(groupChannelId, channelId)){
