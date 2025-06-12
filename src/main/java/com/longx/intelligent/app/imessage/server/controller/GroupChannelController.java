@@ -750,7 +750,7 @@ public class GroupChannelController {
             }
         }
         if(postBody.getChannelIds().contains(currentUser.getImessageId()) || postBody.getChannelIds().contains(owner)){
-            return new OperationStatus(-103, "不能移除自己或管理员。");
+            return new OperationStatus(-103, "参数异常。");
         }
         for (String channelId : postBody.getChannelIds()) {
             if(!groupChannelService.setGroupChannelAssociationToInactive(groupChannelId, channelId)){
