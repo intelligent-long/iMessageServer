@@ -18,7 +18,7 @@ public class Constants {
     public static final int CHANNEL_ADDITION_ADDITION_DURATION_DAY = 7;
     public static final int GROUP_CHANNEL_ADDITION_RECORD_DURATION_DAY = 365;
     public static final int GROUP_CHANNEL_ADDITION_ADDITION_DURATION_DAY = 7;
-    public static final int GROUP_CHANNEL_DISCONNECTION_RECORD_DURATION_DAY = 365;
+    public static final int GROUP_CHANNEL_NOTIFICATION_RECORD_DURATION_DAY = 365;
     public static final int MAX_ALLOW_CHAT_VOICE_DURATION_SEC = 300;
     public static final int MAX_BROADCAST_IMAGE_COUNT = 30;
     public static final int MAX_BROADCAST_VIDEO_COUNT = 5;

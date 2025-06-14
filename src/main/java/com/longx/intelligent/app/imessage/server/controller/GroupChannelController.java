@@ -725,7 +725,9 @@ public class GroupChannelController {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return OperationStatus.failure();
         }else {
-            redisOperationService.GROUP_CHANNEL_DISCONNECTION.saveDisconnection(groupChannelId, currentUser.getImessageId(), null);
+            GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.ACTIVE_DISCONNECT,
+                    groupChannelId, currentUser.getImessageId(), false, currentUser.getImessageId(), new Date(), false);
+            redisOperationService.GROUP_CHANNEL_DISCONNECTION.saveNotification(groupChannelNotification);
         }
         List<String> associatedImessageIds = new ArrayList<>();
         associatedImessageIds.add(currentUser.getImessageId());
@@ -733,8 +735,8 @@ public class GroupChannelController {
             associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
         });
         associatedImessageIds.forEach(associatedImessageId -> {
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_UPDATE, "");
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_NOT_VIEW_COUNT_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
         });
         return OperationStatus.success();
@@ -764,7 +766,9 @@ public class GroupChannelController {
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 return OperationStatus.failure();
             }else {
-                redisOperationService.GROUP_CHANNEL_DISCONNECTION.saveDisconnection(groupChannelId, channelId, currentUser.getImessageId());
+                GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.PASSIVE_DISCONNECT,
+                        groupChannelId, channelId, true, currentUser.getImessageId(), new Date(), false);
+                redisOperationService.GROUP_CHANNEL_DISCONNECTION.saveNotification(groupChannelNotification);
             }
         }
         List<String> associatedImessageIds = new ArrayList<>();
@@ -773,23 +777,23 @@ public class GroupChannelController {
             associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
         });
         associatedImessageIds.forEach(associatedImessageId -> {
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_UPDATE, "");
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_NOT_VIEW_COUNT_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
         });
         return OperationStatus.success();
     }
 
-    @GetMapping("group_channel_disconnections")
-    public OperationData getGroupChannelDisconnections(HttpSession session){
+    @GetMapping("group_channel_notifications")
+    public OperationData getGroupChannelNotifications(HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         List<GroupChannel> allAssociatedGroupChannels = groupChannelService.findAllAssociatedGroupChannels(currentUser.getImessageId());
-        List<GroupChannelDisconnection> disconnections = new ArrayList<>();
+        List<GroupChannelNotification> notifications = new ArrayList<>();
         allAssociatedGroupChannels.forEach(groupChannel -> {
-            redisOperationService.GROUP_CHANNEL_DISCONNECTION.getDisconnections(groupChannel.getGroupChannelId()).forEach(groupChannelDisconnection -> {
-                if(!groupChannelDisconnection.isViewed()) disconnections.add(groupChannelDisconnection);
+            redisOperationService.GROUP_CHANNEL_DISCONNECTION.getNotifications(groupChannel.getGroupChannelId()).forEach(groupChannelNotification -> {
+                if(!groupChannelNotification.isViewed()) notifications.add(groupChannelNotification);
             });
         });
-        return OperationData.success(disconnections);
+        return OperationData.success(notifications);
     }
 }

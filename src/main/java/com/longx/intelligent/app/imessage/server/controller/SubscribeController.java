@@ -80,12 +80,12 @@ public class SubscribeController {
         return "";
     }
 
-    @SubscribeMapping(StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_UPDATE)
+    @SubscribeMapping(StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE)
     public Object onSubscribeGroupChannelDisconnectionsUpdate(){
         return "";
     }
 
-    @SubscribeMapping(StompDestinations.GROUP_CHANNEL_DISCONNECTIONS_NOT_VIEW_COUNT_UPDATE)
+    @SubscribeMapping(StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE)
     public Object onSubscribeGroupChannelDisconnectionsNotViewCountUpdate(){
         return "";
     }

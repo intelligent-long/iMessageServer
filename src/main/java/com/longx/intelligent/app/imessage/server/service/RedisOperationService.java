@@ -40,7 +40,7 @@ public class RedisOperationService {
     public final Chat CHAT = new Chat();
     public final Broadcast BROADCAST = new Broadcast();
     public final GroupChannelAddition GROUP_CHANNEL_ADDITION = new GroupChannelAddition();
-    public final GroupChannelDisconnection GROUP_CHANNEL_DISCONNECTION = new GroupChannelDisconnection();
+    public final GroupChannelNotification GROUP_CHANNEL_DISCONNECTION = new GroupChannelNotification();
 
     public class Auth {
         public void incrementLoginFailureTimes(String imessageId){
@@ -1168,35 +1168,39 @@ public class RedisOperationService {
         }
     }
 
-    public class GroupChannelDisconnection {
-        public void saveDisconnection(String groupChannelId, String channelId, String byWhom) {
-            String disconnectionKey = RedisKeys.GroupChannelDisconnection.disconnection(groupChannelId, channelId);
-            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelDisconnection.DisconnectionHashKey.IS_VIEWED, false);
-            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelDisconnection.DisconnectionHashKey.PASSIVE, byWhom != null);
-            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelDisconnection.DisconnectionHashKey.BY_WHOM, byWhom);
-            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelDisconnection.DisconnectionHashKey.TIME, new Date());
-            redisOperator.expireForHash(disconnectionKey, Constants.GROUP_CHANNEL_DISCONNECTION_RECORD_DURATION_DAY, TimeUnit.DAYS);
+    public class GroupChannelNotification {
+        public void saveNotification(com.longx.intelligent.app.imessage.server.data.GroupChannelNotification groupChannelNotification) {
+            String disconnectionKey = RedisKeys.GroupChannelNotification.notification(groupChannelNotification.getGroupChannelId(), groupChannelNotification.getChannelId(), groupChannelNotification.getUuid());
+            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED, groupChannelNotification.isViewed());
+            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE, groupChannelNotification.isPassive());
+            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelNotification.NotificationHashKey.BY_WHOM, groupChannelNotification.getByWhom());
+            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelNotification.NotificationHashKey.TIME, groupChannelNotification.getTime());
+            redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelNotification.NotificationHashKey.TYPE, groupChannelNotification.getType().name());
+            redisOperator.expireForHash(disconnectionKey, Constants.GROUP_CHANNEL_NOTIFICATION_RECORD_DURATION_DAY, TimeUnit.DAYS);
         }
 
-        public List<com.longx.intelligent.app.imessage.server.data.GroupChannelDisconnection> getDisconnections(String groupChannelId) {
-            String disconnectionPrefix = RedisKeys.GroupChannelDisconnection.getDisconnectionPrefix(groupChannelId);
-            Set<String> keys = redisOperator.keys(disconnectionPrefix + "*");
-            List<com.longx.intelligent.app.imessage.server.data.GroupChannelDisconnection> results = new ArrayList<>();
+        public List<com.longx.intelligent.app.imessage.server.data.GroupChannelNotification> getNotifications(String groupChannelId) {
+            String notificationPrefix = RedisKeys.GroupChannelNotification.getNotificationPrefix(groupChannelId);
+            Set<String> keys = redisOperator.keys(notificationPrefix + "*");
+            List<com.longx.intelligent.app.imessage.server.data.GroupChannelNotification> results = new ArrayList<>();
             for (String key : keys) {
                 if (redisOperator.exists(key) && !isExpired(key)) {
-                    String channelId = key.replace(disconnectionPrefix, "");
-                    boolean passive = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelDisconnection.DisconnectionHashKey.PASSIVE);
-                    boolean isViewed = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelDisconnection.DisconnectionHashKey.IS_VIEWED);
-                    String byWhom = (String) redisOperator.hGet(key, RedisKeys.GroupChannelDisconnection.DisconnectionHashKey.BY_WHOM);
-                    Date time = new Date((Long)redisOperator.hGet(key, RedisKeys.GroupChannelDisconnection.DisconnectionHashKey.TIME));
-                    results.add(new com.longx.intelligent.app.imessage.server.data.GroupChannelDisconnection(groupChannelId, channelId, passive, byWhom, time, isViewed));
+                    String[] split = key.split(":");
+                    String channelId = split[2];
+                    String uuid = split[3];
+                    boolean passive = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE);
+                    boolean isViewed = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED);
+                    String byWhom = (String) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.BY_WHOM);
+                    Date time = new Date((Long)redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.TIME));
+                    com.longx.intelligent.app.imessage.server.data.GroupChannelNotification.Type type = com.longx.intelligent.app.imessage.server.data.GroupChannelNotification.Type.valueOf((String) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.TYPE));
+                    results.add(new com.longx.intelligent.app.imessage.server.data.GroupChannelNotification(uuid, type, groupChannelId, channelId, passive, byWhom, time, isViewed));
                 }
             }
             return results;
         }
 
         public boolean isExpired(String key) {
-            return redisOperator.getExpire(key, TimeUnit.DAYS) > Constants.GROUP_CHANNEL_DISCONNECTION_RECORD_DURATION_DAY;
+            return redisOperator.getExpire(key, TimeUnit.DAYS) > Constants.GROUP_CHANNEL_NOTIFICATION_RECORD_DURATION_DAY;
         }
     }
 }
