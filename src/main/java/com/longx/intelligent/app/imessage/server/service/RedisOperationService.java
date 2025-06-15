@@ -40,7 +40,7 @@ public class RedisOperationService {
     public final Chat CHAT = new Chat();
     public final Broadcast BROADCAST = new Broadcast();
     public final GroupChannelAddition GROUP_CHANNEL_ADDITION = new GroupChannelAddition();
-    public final GroupChannelNotification GROUP_CHANNEL_DISCONNECTION = new GroupChannelNotification();
+    public final GroupChannelNotification GROUP_CHANNEL_NOTIFICATION = new GroupChannelNotification();
 
     public class Auth {
         public void incrementLoginFailureTimes(String imessageId){
@@ -1201,6 +1201,14 @@ public class RedisOperationService {
 
         public boolean isExpired(String key) {
             return redisOperator.getExpire(key, TimeUnit.DAYS) > Constants.GROUP_CHANNEL_NOTIFICATION_RECORD_DURATION_DAY;
+        }
+
+        public void setToViewed(String uuid){
+            String notificationUuid = RedisKeys.GroupChannelNotification.getNotificationUuid(uuid);
+            Set<String> keys = redisOperator.keys(notificationUuid);
+            for (String key : keys) {
+                redisOperator.hSet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED, true);
+            }
         }
     }
 }

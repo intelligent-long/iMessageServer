@@ -339,5 +339,10 @@ public class RedisKeys {
             return NOTIFICATION_PREFIX.replace("{GROUP_CHANNEL_ID}", groupChannelId);
         }
 
+        private static final String NOTIFICATION_UUID = "*:{UUID}";
+        public static String getNotificationUuid(String uuid){
+            return NOTIFICATION_UUID.replace("{UUID}", uuid);
+        }
+
     }
 }
