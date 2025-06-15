@@ -804,6 +804,15 @@ public class GroupChannelController {
                 postBody.getUuids().forEach(uuid -> {
                     if (groupChannelNotification.getUuid().equals(uuid)){
                         redisOperationService.GROUP_CHANNEL_NOTIFICATION.setToViewed(uuid);
+//                        List<String> associatedImessageIds = new ArrayList<>();
+//                        associatedImessageIds.add(currentUser.getImessageId());
+//                        groupChannelService.findGroupChannelById(groupChannel.getGroupChannelId(), currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
+//                            associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
+//                        });
+//                        associatedImessageIds.forEach(associatedImessageId -> {
+//                            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
+//                            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
+//                        });
                     }
                 });
             });
