@@ -334,9 +334,14 @@ public class RedisKeys {
                     .replace("{UUID}", uuid);
         }
 
-        private static final String NOTIFICATION_PREFIX = BASE_PATH + ":{GROUP_CHANNEL_ID}:";
+        private static final String NOTIFICATION_PREFIX = BASE_PATH + ":{GROUP_CHANNEL_ID}:*";
         public static String getNotificationPrefix(String groupChannelId) {
             return NOTIFICATION_PREFIX.replace("{GROUP_CHANNEL_ID}", groupChannelId);
+        }
+
+        private static final String NOTIFICATION_INFIX = BASE_PATH + ":*:{CHANNEL_ID}:*";
+        public static String getNotificationInfix(String channelId) {
+            return NOTIFICATION_INFIX.replace("{CHANNEL_ID}", channelId);
         }
 
         private static final String NOTIFICATION_UUID = "*:{UUID}";

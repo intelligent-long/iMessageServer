@@ -792,30 +792,14 @@ public class GroupChannelController {
         allAssociatedGroupChannels.forEach(groupChannel -> {
             notifications.addAll(redisOperationService.GROUP_CHANNEL_NOTIFICATION.getNotifications(groupChannel.getGroupChannelId()));
         });
+        notifications.addAll(redisOperationService.GROUP_CHANNEL_NOTIFICATION.getSelfNotifications(currentUser.getImessageId()));
         return OperationData.success(notifications);
     }
 
     @PostMapping("group_channel_notifications/view")
-    public OperationStatus viewGroupChannelNotifications(@RequestBody ViewGroupChannelNotificationsPostBody postBody, HttpSession session){
-        User currentUser = sessionService.getUserOfSession(session);
-        List<GroupChannel> allAssociatedGroupChannels = groupChannelService.findAllAssociatedGroupChannels(currentUser.getImessageId());
-        allAssociatedGroupChannels.forEach(groupChannel -> {
-            redisOperationService.GROUP_CHANNEL_NOTIFICATION.getNotifications(groupChannel.getGroupChannelId()).forEach(groupChannelNotification -> {
-                postBody.getUuids().forEach(uuid -> {
-                    if (groupChannelNotification.getUuid().equals(uuid)){
-                        redisOperationService.GROUP_CHANNEL_NOTIFICATION.setToViewed(uuid);
-//                        List<String> associatedImessageIds = new ArrayList<>();
-//                        associatedImessageIds.add(currentUser.getImessageId());
-//                        groupChannelService.findGroupChannelById(groupChannel.getGroupChannelId(), currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
-//                            associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
-//                        });
-//                        associatedImessageIds.forEach(associatedImessageId -> {
-//                            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
-//                            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
-//                        });
-                    }
-                });
-            });
+    public OperationStatus viewGroupChannelNotifications(@RequestBody ViewGroupChannelNotificationsPostBody postBody, HttpSession session) {
+        postBody.getUuids().forEach(uuid -> {
+            redisOperationService.GROUP_CHANNEL_NOTIFICATION.setToViewed(uuid);
         });
         return OperationStatus.success();
     }

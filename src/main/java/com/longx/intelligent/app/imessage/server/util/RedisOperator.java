@@ -99,4 +99,11 @@ public class RedisOperator {
         return redisTemplate.hasKey(key);
     }
 
+    public void renameKey(String oldKey, String newKey) {
+        Boolean success = stringRedisTemplate.renameIfAbsent(oldKey, newKey);
+        if (Boolean.FALSE.equals(success)) {
+            throw new RuntimeException("新 key 已存在或旧 key 不存在");
+        }
+    }
+
 }
