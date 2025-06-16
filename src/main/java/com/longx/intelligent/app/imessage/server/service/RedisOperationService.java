@@ -1169,8 +1169,8 @@ public class RedisOperationService {
     }
 
     public class GroupChannelNotification {
-        public void saveNotification(com.longx.intelligent.app.imessage.server.data.GroupChannelNotification groupChannelNotification) {
-            String disconnectionKey = RedisKeys.GroupChannelNotification.notification(groupChannelNotification.getGroupChannelId(), groupChannelNotification.getChannelId(), groupChannelNotification.getUuid());
+        public void saveNotification(String toFetchChannelId, com.longx.intelligent.app.imessage.server.data.GroupChannelNotification groupChannelNotification) {
+            String disconnectionKey = RedisKeys.GroupChannelNotification.notification(toFetchChannelId, groupChannelNotification.getGroupChannelId(), groupChannelNotification.getChannelId(), groupChannelNotification.getUuid());
             redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED, groupChannelNotification.isViewed());
             redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE, groupChannelNotification.isPassive());
             redisOperator.hSet(disconnectionKey, RedisKeys.GroupChannelNotification.NotificationHashKey.BY_WHOM, groupChannelNotification.getByWhom());
@@ -1179,15 +1179,16 @@ public class RedisOperationService {
             redisOperator.expireForHash(disconnectionKey, Constants.GROUP_CHANNEL_NOTIFICATION_RECORD_DURATION_DAY, TimeUnit.DAYS);
         }
 
-        public List<com.longx.intelligent.app.imessage.server.data.GroupChannelNotification> getNotifications(String groupChannelId) {
-            String notificationPrefix = RedisKeys.GroupChannelNotification.getNotificationPrefix(groupChannelId);
-            Set<String> keys = redisOperator.keys(notificationPrefix);
+        public List<com.longx.intelligent.app.imessage.server.data.GroupChannelNotification> getNotifications(String toFetchChannelId) {
+            String notificationWithToFetchChannelId = RedisKeys.GroupChannelNotification.getNotificationWithToFetchChannelId(toFetchChannelId);
+            Set<String> keys = redisOperator.keys(notificationWithToFetchChannelId);
             List<com.longx.intelligent.app.imessage.server.data.GroupChannelNotification> results = new ArrayList<>();
             for (String key : keys) {
                 if (redisOperator.exists(key) && !isExpired(key)) {
                     String[] split = key.split(":");
-                    String channelId = split[2];
-                    String uuid = split[3];
+                    String groupChannelId = split[3];
+                    String channelId = split[4];
+                    String uuid = split[5];
                     boolean passive = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE);
                     boolean isViewed = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED);
                     String byWhom = (String) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.BY_WHOM);
@@ -1195,7 +1196,7 @@ public class RedisOperationService {
                     com.longx.intelligent.app.imessage.server.data.GroupChannelNotification.Type type = com.longx.intelligent.app.imessage.server.data.GroupChannelNotification.Type.valueOf((String) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.TYPE));
                     results.add(new com.longx.intelligent.app.imessage.server.data.GroupChannelNotification(uuid, type, groupChannelId, channelId, passive, byWhom, time, isViewed));
                     if(isViewed){
-                        redisOperator.renameKey(key, "FETCH_COMPLETE:" + key);
+                        redisOperator.renameKey(key, key.replace("TO_FETCH", "FETCH_COMPLETE"));
                     }
                 }
             }
@@ -1203,8 +1204,8 @@ public class RedisOperationService {
         }
 
         public List<com.longx.intelligent.app.imessage.server.data.GroupChannelNotification> getSelfNotifications(String channelId){
-            String notificationInfix = RedisKeys.GroupChannelNotification.getNotificationInfix(channelId);
-            Set<String> keys = redisOperator.keys(notificationInfix);
+            String notificationWithChannelId = RedisKeys.GroupChannelNotification.getNotificationWithChannelId(channelId);
+            Set<String> keys = redisOperator.keys(notificationWithChannelId);
             List<com.longx.intelligent.app.imessage.server.data.GroupChannelNotification> results = new ArrayList<>();
             for (String key : keys) {
                 if (redisOperator.exists(key) && !isExpired(key)) {
@@ -1229,9 +1230,9 @@ public class RedisOperationService {
             return redisOperator.getExpire(key, TimeUnit.DAYS) > Constants.GROUP_CHANNEL_NOTIFICATION_RECORD_DURATION_DAY;
         }
 
-        public void setToViewed(String uuid){
-            String notificationUuid = RedisKeys.GroupChannelNotification.getNotificationUuid(uuid);
-            Set<String> keys = redisOperator.keys(notificationUuid);
+        public void setToViewed(String toFetchChannelId, String uuid){
+            String notificationWithUuid = RedisKeys.GroupChannelNotification.getNotificationWithUuid(toFetchChannelId, uuid);
+            Set<String> keys = redisOperator.keys(notificationWithUuid);
             for (String key : keys) {
                 redisOperator.hSet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED, true);
             }

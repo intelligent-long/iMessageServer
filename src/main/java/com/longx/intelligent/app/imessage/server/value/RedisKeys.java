@@ -327,26 +327,32 @@ public class RedisKeys {
             public static final String TYPE = "type";
         }
 
-        private static final String NOTIFICATION = BASE_PATH + ":{GROUP_CHANNEL_ID}:{CHANNEL_ID}:{UUID}";
-        public static String notification(String groupChannelId, String channelId, String uuid){
-            return NOTIFICATION.replace("{GROUP_CHANNEL_ID}", groupChannelId)
+        private static final String NOTIFICATION = BASE_PATH + ":TO_FETCH:{TO_FETCH_CHANNEL_ID}:{GROUP_CHANNEL_ID}:{CHANNEL_ID}:{UUID}";
+        public static String notification(String toFetchChannelId, String groupChannelId, String channelId, String uuid){
+            return NOTIFICATION.replace("{TO_FETCH_CHANNEL_ID}", toFetchChannelId)
+                    .replace("{GROUP_CHANNEL_ID}", groupChannelId)
                     .replace("{CHANNEL_ID}", channelId)
                     .replace("{UUID}", uuid);
         }
 
-        private static final String NOTIFICATION_PREFIX = BASE_PATH + ":{GROUP_CHANNEL_ID}:*";
-        public static String getNotificationPrefix(String groupChannelId) {
-            return NOTIFICATION_PREFIX.replace("{GROUP_CHANNEL_ID}", groupChannelId);
+        private static final String NOTIFICATION_WITH_GROUP_CHANNEL_ID = BASE_PATH + ":TO_FETCH:*:{GROUP_CHANNEL_ID}:*";
+        public static String getNotificationWithGroupChannelId(String groupChannelId) {
+            return NOTIFICATION_WITH_GROUP_CHANNEL_ID.replace("{GROUP_CHANNEL_ID}", groupChannelId);
         }
 
-        private static final String NOTIFICATION_INFIX = BASE_PATH + ":*:{CHANNEL_ID}:*";
-        public static String getNotificationInfix(String channelId) {
-            return NOTIFICATION_INFIX.replace("{CHANNEL_ID}", channelId);
+        private static final String NOTIFICATION_WITH_CHANNEL_ID = BASE_PATH + ":TO_FETCH:*:{CHANNEL_ID}:*";
+        public static String getNotificationWithChannelId(String channelId) {
+            return NOTIFICATION_WITH_CHANNEL_ID.replace("{CHANNEL_ID}", channelId);
         }
 
-        private static final String NOTIFICATION_UUID = "*:{UUID}";
-        public static String getNotificationUuid(String uuid){
-            return NOTIFICATION_UUID.replace("{UUID}", uuid);
+        private static final String NOTIFICATION_WITH_UUID = BASE_PATH + ":TO_FETCH:{TO_FETCH_CHANNEL_ID}:*:{UUID}";
+        public static String getNotificationWithUuid(String toFetchChannelId, String uuid){
+            return NOTIFICATION_WITH_UUID.replace("{TO_FETCH_CHANNEL_ID}", toFetchChannelId).replace("{UUID}", uuid);
+        }
+
+        private static final String NOTIFICATION_WITH_TO_FETCH_CHANNEL_ID = BASE_PATH + ":TO_FETCH:{TO_FETCH_CHANNEL_ID}:*";
+        public static String getNotificationWithToFetchChannelId(String toFetchChannelId) {
+            return NOTIFICATION_WITH_TO_FETCH_CHANNEL_ID.replace("{TO_FETCH_CHANNEL_ID}", toFetchChannelId);
         }
 
     }

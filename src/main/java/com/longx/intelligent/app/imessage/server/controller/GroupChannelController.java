@@ -486,6 +486,10 @@ public class GroupChannelController {
     public OperationStatus addChannelsToTag(@Valid @RequestBody AddGroupChannelsToTagPostBody postBody, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         for (String toAddGroupChannelId : postBody.getGroupChannelIdList()) {
+            if(!groupChannelService.isGroupChannelAssociated(toAddGroupChannelId, currentUser.getImessageId())){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return new OperationStatus(-101, "未建立关系");
+            }
             boolean success = groupChannelService.insertTagGroupChannel(postBody.getTagId(), currentUser.getImessageId(), toAddGroupChannelId);
             if(!success){
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -501,6 +505,10 @@ public class GroupChannelController {
     public OperationStatus removeChannelsOfTag(@Valid @RequestBody RemoveGroupChannelsOfTagPostBody postBody, HttpSession session) {
         User currentUser = sessionService.getUserOfSession(session);
         for (String groupChannelIdToRemove : postBody.getGroupChannelIdList()) {
+            if(!groupChannelService.isGroupChannelAssociated(groupChannelIdToRemove, currentUser.getImessageId())){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return new OperationStatus(-101, "未建立关系");
+            }
             boolean success = groupChannelService.deleteTagGroupChannel(postBody.getTagId(), currentUser.getImessageId(), groupChannelIdToRemove);
             if(!success){
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -727,19 +735,19 @@ public class GroupChannelController {
         }else {
             GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.ACTIVE_DISCONNECT,
                     groupChannelId, currentUser.getImessageId(), false, currentUser.getImessageId(), new Date(), false);
-            redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(groupChannelNotification);
+            List<String> associatedImessageIds = new ArrayList<>();
+            associatedImessageIds.add(currentUser.getImessageId());
+            groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
+                associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
+            });
+            associatedImessageIds.forEach(associatedImessageId -> {
+                redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(associatedImessageId, groupChannelNotification);
+                simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
+                simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
+                simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
+            });
+            return OperationStatus.success();
         }
-        List<String> associatedImessageIds = new ArrayList<>();
-        associatedImessageIds.add(currentUser.getImessageId());
-        groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
-            associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
-        });
-        associatedImessageIds.forEach(associatedImessageId -> {
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
-        });
-        return OperationStatus.success();
     }
 
     @PostMapping("disconnect/manage/{groupChannelId}")
@@ -761,6 +769,11 @@ public class GroupChannelController {
         if(postBody.getChannelIds().contains(currentUser.getImessageId()) || postBody.getChannelIds().contains(owner)){
             return new OperationStatus(-103, "参数异常。");
         }
+        List<String> associatedImessageIds = new ArrayList<>();
+        associatedImessageIds.add(currentUser.getImessageId());
+        groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
+            associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
+        });
         for (String channelId : postBody.getChannelIds()) {
             if(!groupChannelService.setGroupChannelAssociationToInactive(groupChannelId, channelId)){
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -768,14 +781,11 @@ public class GroupChannelController {
             }else {
                 GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.PASSIVE_DISCONNECT,
                         groupChannelId, channelId, true, currentUser.getImessageId(), new Date(), false);
-                redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(groupChannelNotification);
+                associatedImessageIds.forEach(associatedImessageId -> {
+                    redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(associatedImessageId, groupChannelNotification);
+                });
             }
         }
-        List<String> associatedImessageIds = new ArrayList<>();
-        associatedImessageIds.add(currentUser.getImessageId());
-        groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
-            associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
-        });
         associatedImessageIds.forEach(associatedImessageId -> {
             simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
@@ -787,19 +797,15 @@ public class GroupChannelController {
     @GetMapping("group_channel_notifications")
     public OperationData getGroupChannelNotifications(HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
-        List<GroupChannel> allAssociatedGroupChannels = groupChannelService.findAllAssociatedGroupChannels(currentUser.getImessageId());
-        List<GroupChannelNotification> notifications = new ArrayList<>();
-        allAssociatedGroupChannels.forEach(groupChannel -> {
-            notifications.addAll(redisOperationService.GROUP_CHANNEL_NOTIFICATION.getNotifications(groupChannel.getGroupChannelId()));
-        });
-        notifications.addAll(redisOperationService.GROUP_CHANNEL_NOTIFICATION.getSelfNotifications(currentUser.getImessageId()));
+        List<GroupChannelNotification> notifications = new ArrayList<>(redisOperationService.GROUP_CHANNEL_NOTIFICATION.getNotifications(currentUser.getImessageId()));
         return OperationData.success(notifications);
     }
 
     @PostMapping("group_channel_notifications/view")
     public OperationStatus viewGroupChannelNotifications(@RequestBody ViewGroupChannelNotificationsPostBody postBody, HttpSession session) {
+        User currentUser = sessionService.getUserOfSession(session);
         postBody.getUuids().forEach(uuid -> {
-            redisOperationService.GROUP_CHANNEL_NOTIFICATION.setToViewed(uuid);
+            redisOperationService.GROUP_CHANNEL_NOTIFICATION.setToViewed(currentUser.getImessageId(), uuid);
         });
         return OperationStatus.success();
     }
