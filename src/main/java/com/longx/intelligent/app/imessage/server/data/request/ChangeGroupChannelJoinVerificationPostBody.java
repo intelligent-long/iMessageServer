@@ -1,5 +1,7 @@
 package com.longx.intelligent.app.imessage.server.data.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 
 /**
@@ -7,21 +9,22 @@ import org.springframework.validation.annotation.Validated;
  */
 @Validated
 public class ChangeGroupChannelJoinVerificationPostBody {
-
-    private final String groupId;
-    private final Boolean groupJoinVerification;
+    @NotNull(message = "数据不合法。")
+    @NotBlank(message = "数据不合法。")
+    private String groupId;
+    @NotNull(message = "数据不合法。")
+    private Boolean groupJoinVerificationEnabled;
 
     public ChangeGroupChannelJoinVerificationPostBody() {
-        this(null, null);
     }
 
-    public ChangeGroupChannelJoinVerificationPostBody(String groupId, Boolean groupJoinVerification) {
+    public ChangeGroupChannelJoinVerificationPostBody(String groupId, Boolean groupJoinVerificationEnabled) {
         this.groupId = groupId;
-        this.groupJoinVerification = groupJoinVerification;
+        this.groupJoinVerificationEnabled = groupJoinVerificationEnabled;
     }
 
     public Boolean getGroupJoinVerificationEnabled() {
-        return groupJoinVerification;
+        return groupJoinVerificationEnabled;
     }
 
     public String getGroupId() {

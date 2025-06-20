@@ -237,7 +237,7 @@ public class GroupChannelService {
     }
 
     public boolean updateGroupJoinVerificationEnabled(String groupChannelId, Boolean joinVerification, String owner){
-        return groupChannelMapper.updateGroupJoinVerification(groupChannelId, joinVerification, owner) == 1;
+        return groupChannelMapper.updateGroupJoinVerificationEnabled(groupChannelId, joinVerification, owner) == 1;
     }
 
     public void saveTransferManagerInviter(GroupChannelManagerTransfer groupChannelManagerTransfer) {

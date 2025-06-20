@@ -672,10 +672,10 @@ public class GroupChannelController {
         }
         if(groupChannelId != null && success1 && success2 && success3){
             simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.GROUP_CHANNEL_ADDITIONS_UPDATE, "");
-            simpMessagingTemplate.convertAndSendToUser(toUser.getImessageId(), StompDestinations.GROUP_CHANNEL_ADDITIONS_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.GROUP_CHANNEL_ADDITIONS_NOT_VIEW_COUNT_UPDATE, "");
-            simpMessagingTemplate.convertAndSendToUser(toUser.getImessageId(), StompDestinations.GROUP_CHANNEL_ADDITIONS_NOT_VIEW_COUNT_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.GROUP_CHANNELS_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(toUser.getImessageId(), StompDestinations.GROUP_CHANNEL_ADDITIONS_NOT_VIEW_COUNT_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(toUser.getImessageId(), StompDestinations.GROUP_CHANNEL_ADDITIONS_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(toUser.getImessageId(), StompDestinations.GROUP_CHANNELS_UPDATE, "");
             return OperationStatus.success();
         }

@@ -67,7 +67,7 @@ public interface GroupChannelMapper {
 
     int deleteTagGroupChannel(String tagId, String imessageId, String groupChannelId);
 
-    int updateGroupJoinVerification(String groupChannelId, Boolean joinVerification, String owner);
+    int updateGroupJoinVerificationEnabled(String groupChannelId, Boolean joinVerification, String owner);
 
     Boolean isGroupJoinNeedVerification(String groupChannelId);
 

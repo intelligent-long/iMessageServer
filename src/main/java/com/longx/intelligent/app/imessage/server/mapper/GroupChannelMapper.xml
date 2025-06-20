@@ -304,7 +304,7 @@
         ) AND group_channel_id = #{groupChannelId};
     </delete>
 
-    <update id="updateGroupJoinVerification">
+    <update id="updateGroupJoinVerificationEnabled">
         UPDATE group_channel SET group_join_verification_enabled = #{joinVerification} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
     </update>
 
