@@ -1,6 +1,7 @@
 package com.longx.intelligent.app.imessage.server.service;
 
 import com.longx.intelligent.app.imessage.server.data.Channel;
+import com.longx.intelligent.app.imessage.server.data.GroupChannel;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -28,10 +29,9 @@ public class StompService {
     }
 
     public void sendGroupChannelUpdate(String currentUserImessageId, String groupChannelId){
-//        simpMessagingTemplate.convertAndSendToUser(currentUserImessageId, StompDestinations.GROUP_CHANNEL_UPDATE, groupChannelId);
-//        List<Channel> allAssociatedChannels = groupChannelService.findGroupAllAssociatedChannels(groupChannelId, currentUserImessageId);
-//        allAssociatedChannels.forEach(associatedChannel -> {
-//            simpMessagingTemplate.convertAndSendToUser(associatedChannel.getImessageId(), StompDestinations.GROUP_CHANNEL_UPDATE, groupChannelId);
-//        });
+        GroupChannel groupChannel = groupChannelService.findGroupChannelById(groupChannelId, currentUserImessageId);
+        groupChannel.getGroupChannelAssociations().forEach(groupChannelAssociation -> {
+            simpMessagingTemplate.convertAndSendToUser(groupChannelAssociation.getRequester().getImessageId(), StompDestinations.GROUP_CHANNEL_UPDATE, groupChannelId);
+        });
     }
 }
