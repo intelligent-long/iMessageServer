@@ -106,7 +106,7 @@ public class GroupChannelManageController {
     }
 
     @PostMapping("transfer_manager")
-    public OperationStatus transferGroupChannelManager(@Valid TransferGroupChannelManagerPostBody postBody, HttpSession session){
+    public OperationStatus transferGroupChannelManager(@Valid @RequestBody TransferGroupChannelManagerPostBody postBody, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         GroupChannel toTransferGroupChannel = groupChannelService.findGroupChannelById(postBody.getToTransferGroupChannelId(), currentUser.getImessageId());
         if(toTransferGroupChannel == null){
@@ -122,18 +122,22 @@ public class GroupChannelManageController {
             return new OperationStatus(-104, "参数异常。");
         }
         if (groupChannelService.isTransferManagerInInviting(currentUser.getImessageId(), toTransferGroupChannel.getGroupChannelId())) {
-            return new OperationStatus(-105, "群频道已经在添加中");
+            return new OperationStatus(-105, "群频道管理员已经在移交中。");
         }
-        Date inviterTime = new Date();
-        String uuid = UUID.randomUUID().toString();
-        Channel inviterChannel = channelService.findChannelByImessageId(currentUser.getImessageId(), currentUser.getImessageId());
-        Channel transferToChannel = channelService.findChannelByImessageId(postBody.getTransferToChannelId(), currentUser.getImessageId());
-        groupChannelService.saveTransferManagerInviter(GroupChannelManagerTransfer.create(uuid, inviterChannel, transferToChannel,
-                toTransferGroupChannel, null, inviterTime, null, false, false, false));
-        groupChannelService.saveTransferManagerInvitee(GroupChannelManagerTransfer.create(uuid, inviterChannel, transferToChannel,
-                toTransferGroupChannel, null, inviterTime, null, false, false, false));
-
-return OperationStatus.success();
+        List<String> receiveNotificationsImessageIds = new ArrayList<>();
+        receiveNotificationsImessageIds.add(currentUser.getImessageId());
+        receiveNotificationsImessageIds.add(postBody.getTransferToChannelId());
+        GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.INVITE_TRANSFER_MANAGER,
+                postBody.getToTransferGroupChannelId(), postBody.getTransferToChannelId(), null, currentUser.getImessageId(), new Date(), false);
+        receiveNotificationsImessageIds.forEach(receiveNotificationsImessageId -> {
+            redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(receiveNotificationsImessageId, groupChannelNotification);
+        });
+        receiveNotificationsImessageIds.forEach(receiveNotificationsImessageId -> {
+            simpMessagingTemplate.convertAndSendToUser(receiveNotificationsImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(receiveNotificationsImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(receiveNotificationsImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
+        });
+        return OperationStatus.success();
     }
 
 }

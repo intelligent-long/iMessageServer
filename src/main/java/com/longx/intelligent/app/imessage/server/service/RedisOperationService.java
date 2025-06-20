@@ -1188,7 +1188,7 @@ public class RedisOperationService {
                     String groupChannelId = split[3];
                     String channelId = split[4];
                     String uuid = split[5];
-                    boolean passive = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE);
+                    Boolean passive = (Boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE);
                     boolean isViewed = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED);
                     String byWhom = (String) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.BY_WHOM);
                     Date time = new Date((Long)redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.TIME));
@@ -1211,7 +1211,7 @@ public class RedisOperationService {
                     String[] split = key.split(":");
                     String groupChannelId = split[1];
                     String uuid = split[3];
-                    boolean passive = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE);
+                    Boolean passive = (Boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE);
                     boolean isViewed = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED);
                     String byWhom = (String) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.BY_WHOM);
                     Date time = new Date((Long)redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.TIME));

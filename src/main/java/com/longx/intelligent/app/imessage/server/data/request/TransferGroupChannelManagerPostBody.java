@@ -1,5 +1,6 @@
 package com.longx.intelligent.app.imessage.server.data.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
@@ -10,10 +11,8 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class TransferGroupChannelManagerPostBody {
     @NotBlank(message = "参数不合法")
-    @NotNull(message = "参数不合法")
     private String toTransferGroupChannelId;
     @NotBlank(message = "参数不合法")
-    @NotNull(message = "参数不合法")
     private String transferToChannelId;
 
     public TransferGroupChannelManagerPostBody() {

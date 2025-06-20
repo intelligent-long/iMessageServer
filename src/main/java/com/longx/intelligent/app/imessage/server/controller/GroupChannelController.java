@@ -728,7 +728,7 @@ public class GroupChannelController {
     public OperationStatus disconnectChannel(@PathVariable("groupChannelId") String groupChannelId, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         if(groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getOwner().equals(currentUser.getImessageId())){
-            return new OperationStatus(-101, "你是群主，无法退出群聊。请先转让群主身份再尝试退出。");
+            return new OperationStatus(-101, "你是群主，无法退出群聊。请先移交群主身份再尝试退出。");
         }
         if(!groupChannelService.isGroupChannelAssociated(groupChannelId, currentUser.getImessageId())){
             return OperationStatus.failure();

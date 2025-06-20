@@ -240,15 +240,16 @@ public class GroupChannelService {
         return groupChannelMapper.updateGroupJoinVerificationEnabled(groupChannelId, joinVerification, owner) == 1;
     }
 
-    public void saveTransferManagerInviter(GroupChannelManagerTransfer groupChannelManagerTransfer) {
-        redisOperationService.GROUP_CHANNEL_MANAGE.saveInviter(groupChannelManagerTransfer);
-    }
-
-    public void saveTransferManagerInvitee(GroupChannelManagerTransfer groupChannelManagerTransfer) {
-        redisOperationService.GROUP_CHANNEL_MANAGE.saveInvitee(groupChannelManagerTransfer);
-    }
+//    public void saveTransferManagerInviter(GroupChannelManagerTransfer groupChannelManagerTransfer) {
+//        redisOperationService.GROUP_CHANNEL_MANAGE.saveInviter(groupChannelManagerTransfer);
+//    }
+//
+//    public void saveTransferManagerInvitee(GroupChannelManagerTransfer groupChannelManagerTransfer) {
+//        redisOperationService.GROUP_CHANNEL_MANAGE.saveInvitee(groupChannelManagerTransfer);
+//    }
 
     public boolean isTransferManagerInInviting(String inviterImessageId, String groupChannelId) {
-        return redisOperationService.GROUP_CHANNEL_MANAGE.isInInviting(inviterImessageId, groupChannelId);
+//        return redisOperationService.GROUP_CHANNEL_MANAGE.isInInviting(inviterImessageId, groupChannelId);
+        return false;
     }
 }
