@@ -248,8 +248,14 @@ public class GroupChannelService {
 //        redisOperationService.GROUP_CHANNEL_MANAGE.saveInvitee(groupChannelManagerTransfer);
 //    }
 
-    public boolean isTransferManagerInInviting(String inviterImessageId, String groupChannelId) {
-//        return redisOperationService.GROUP_CHANNEL_MANAGE.isInInviting(inviterImessageId, groupChannelId);
+    public boolean isTransferManagerInInviting(String transferToChannelId, String toTransferGroupChannelId) {
+        List<GroupChannelNotification> notifications = redisOperationService.GROUP_CHANNEL_NOTIFICATION.getNotifications(transferToChannelId);
+        for (GroupChannelNotification notification : notifications) {
+            if(notification.getType() == GroupChannelNotification.Type.INVITE_TRANSFER_MANAGER
+                    && notification.getGroupChannelId().equals(toTransferGroupChannelId) && !notification.isViewed()){
+                return true;
+            }
+        }
         return false;
     }
 }

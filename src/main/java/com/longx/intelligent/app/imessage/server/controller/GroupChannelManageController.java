@@ -121,7 +121,7 @@ public class GroupChannelManageController {
         if(!groupChannelService.isGroupChannelAssociated(postBody.getToTransferGroupChannelId(), postBody.getTransferToChannelId())){
             return new OperationStatus(-104, "参数异常。");
         }
-        if (groupChannelService.isTransferManagerInInviting(currentUser.getImessageId(), toTransferGroupChannel.getGroupChannelId())) {
+        if (groupChannelService.isTransferManagerInInviting(postBody.getTransferToChannelId(), toTransferGroupChannel.getGroupChannelId())) {
             return new OperationStatus(-105, "群频道管理员已经在移交中。");
         }
         List<String> receiveNotificationsImessageIds = new ArrayList<>();

@@ -41,7 +41,6 @@ public class RedisOperationService {
     public final Broadcast BROADCAST = new Broadcast();
     public final GroupChannelAddition GROUP_CHANNEL_ADDITION = new GroupChannelAddition();
     public final GroupChannelNotification GROUP_CHANNEL_NOTIFICATION = new GroupChannelNotification();
-    public final GroupChannelManage GROUP_CHANNEL_MANAGE = new GroupChannelManage();
 
     public class Auth {
         public void incrementLoginFailureTimes(String imessageId){
@@ -1235,21 +1234,6 @@ public class RedisOperationService {
             for (String key : keys) {
                 redisOperator.hSet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED, true);
             }
-        }
-    }
-
-    public class GroupChannelManage{
-        public void saveInviter(GroupChannelManagerTransfer groupChannelManagerTransfer){
-
-        }
-
-        public void saveInvitee(GroupChannelManagerTransfer groupChannelManagerTransfer){
-
-        }
-
-        public boolean isInInviting(String inviterImessageId, String groupChannelId){
-
-            return false;
         }
     }
 }

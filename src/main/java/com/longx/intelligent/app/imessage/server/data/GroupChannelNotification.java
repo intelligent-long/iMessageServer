@@ -61,4 +61,18 @@ public class GroupChannelNotification {
     public boolean isViewed() {
         return isViewed;
     }
+
+    @Override
+    public String toString() {
+        return "GroupChannelNotification{" +
+                "uuid='" + uuid + '\'' +
+                ", type=" + type +
+                ", groupChannelId='" + groupChannelId + '\'' +
+                ", channelId='" + channelId + '\'' +
+                ", passive=" + passive +
+                ", byWhom='" + byWhom + '\'' +
+                ", time=" + time +
+                ", isViewed=" + isViewed +
+                '}';
+    }
 }
