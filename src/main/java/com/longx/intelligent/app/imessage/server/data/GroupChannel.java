@@ -19,14 +19,14 @@ public class GroupChannel {
     private Region secondRegion;
     private Region thirdRegion;
     private String avatarHash;
-    private Boolean groupJoinVerification;
+    private Boolean groupJoinVerificationEnabled;
 
     public GroupChannel() {
     }
 
     public GroupChannel(GroupAvatar groupAvatar, String groupChannelId, String groupChannelIdUser, String owner, String name,
                         String note, Date createTime, List<GroupChannelAssociation> groupChannelAssociations, Region firstRegion,
-                        Region secondRegion, Region thirdRegion, String avatarHash, Boolean groupJoinVerification) {
+                        Region secondRegion, Region thirdRegion, String avatarHash, Boolean groupJoinVerificationEnabled) {
         this.groupAvatar = groupAvatar;
         this.groupChannelId = groupChannelId;
         this.groupChannelIdUser = groupChannelIdUser;
@@ -39,7 +39,7 @@ public class GroupChannel {
         this.secondRegion = secondRegion;
         this.thirdRegion = thirdRegion;
         this.avatarHash = avatarHash;
-        this.groupJoinVerification = groupJoinVerification;
+        this.groupJoinVerificationEnabled = groupJoinVerificationEnabled;
     }
 
     public GroupAvatar getGroupAvatar() {
@@ -90,8 +90,8 @@ public class GroupChannel {
         return avatarHash;
     }
 
-    public Boolean getGroupJoinVerification() {
-        return groupJoinVerification;
+    public Boolean getGroupJoinVerificationEnabled() {
+        return groupJoinVerificationEnabled;
     }
 
     @Override
@@ -109,7 +109,7 @@ public class GroupChannel {
                 ", secondRegion=" + secondRegion +
                 ", thirdRegion=" + thirdRegion +
                 ", avatarHash='" + avatarHash + '\'' +
-                ", groupJoinVerification=" + groupJoinVerification +
+                ", groupJoinVerificationEnabled=" + groupJoinVerificationEnabled +
                 '}';
     }
 }

@@ -1,5 +1,8 @@
 package com.longx.intelligent.app.imessage.server.value;
 
+import com.longx.intelligent.app.imessage.server.data.Channel;
+import com.longx.intelligent.app.imessage.server.data.GroupChannel;
+
 /**
  * Created by LONG on 2024/3/30 at 12:53 AM.
  */
@@ -355,5 +358,20 @@ public class RedisKeys {
             return NOTIFICATION_WITH_TO_FETCH_CHANNEL_ID.replace("{TO_FETCH_CHANNEL_ID}", toFetchChannelId);
         }
 
+    }
+
+    public static class GroupChannelManagerTransfer{
+        private static final String BASE_PATH = "group_channel_manager_transfer";
+        public static class HashKey {
+            public static final String UUID = "uuid";
+            public static final String MESSAGE = "message";
+            public static final String INVITER_TIME = "inviter_time";
+            public static final String RESPOND_TIME = "respond_time";
+            public static final String IS_ACCEPTED = "is_accepted";
+            public static final String IS_VIEWED = "is_viewed";
+            public static final String INVITER_CHANNEL_ID = "inviter_channel_id";
+            public static final String TRANSFER_TO_CHANNEL_ID = "transfer_to_channel_id";
+            public static final String TO_TRANSFER_GROUP_CHANNEL_ID = "to_transfer_group_channel_id";
+        }
     }
 }

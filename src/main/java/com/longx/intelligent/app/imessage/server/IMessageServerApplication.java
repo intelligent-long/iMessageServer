@@ -35,6 +35,12 @@ public class IMessageServerApplication {
             new Thread(() -> {
                 new SpringApplicationBuilder(IMessageServerApplication.class)
                         .properties(Map.of("spring.config.name", "gui-application"))
+//                        .properties(Map.of("logging.level.org.mybatis", "DEBUG"))
+//                        .properties(Map.of("logging.level.org.apache.ibatis", "DEBUG"))
+//                        .properties(Map.of("logging.level.jdbc.sqlonly", "DEBUG"))
+//                        .properties(Map.of("logging.level.jdbc.sqltiming", "DEBUG"))
+//                        .properties(Map.of("logging.level.jdbc.resultsettable", "DEBUG"))
+//                        .properties(Map.of("logging.level.com.zaxxer.hikari", "INFO"))
                         .run(args);
             }).start();
         });

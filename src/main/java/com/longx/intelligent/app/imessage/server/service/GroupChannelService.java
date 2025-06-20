@@ -101,10 +101,6 @@ public class GroupChannelService {
         return groupChannelMapper.findGroupChannelByIdUser(groupChannelIdUser, currentUserId);
     }
 
-    public boolean updateGroupChannelName(String groupChannelId, String newName, String owner){
-        return groupChannelMapper.updateGroupChannelName(groupChannelId, newName, owner) > 0;
-    }
-
     public Date findGroupChannelIdUserLastChangeTime(String groupChannelId){
         return groupChannelMapper.findGroupChannelIdUserLastChangeTime(groupChannelId);
     }
@@ -120,18 +116,6 @@ public class GroupChannelService {
             }
         }
         return true;
-    }
-
-    public boolean updateGroupChannelIdUser(String groupChannelId, String newGroupChannelIdUser, String owner){
-        return groupChannelMapper.updateGroupChannelIdUser(groupChannelId, newGroupChannelIdUser, owner) == 1;
-    }
-
-    public boolean updateGroupChannelAvatar(GroupChannelAvatar avatar, byte[] data){
-        return groupChannelMapper.updateGroupChannelAvatar(avatar, data) == 1;
-    }
-
-    public boolean updateAvatarHashWithGroupChannel(String avatarHash, String groupChannelId, String owner){
-        return groupChannelMapper.updateAvatarHashWithGroupChannel(avatarHash, groupChannelId, owner) == 1;
     }
 
     public GroupChannelAvatar findAvatar(String avatarHash){
@@ -168,10 +152,6 @@ public class GroupChannelService {
 
     public boolean deleteTagGroupChannel(String tagId, String imessageId, String groupChannelId){
         return groupChannelMapper.deleteTagGroupChannel(tagId, imessageId, groupChannelId) == 1;
-    }
-
-    public boolean updateGroupJoinVerification(String groupChannelId, Boolean joinVerification, String owner){
-        return groupChannelMapper.updateGroupJoinVerification(groupChannelId, joinVerification, owner) == 1;
     }
 
     public boolean isGroupJoinNeedVerification(String groupChannelId){
@@ -238,5 +218,37 @@ public class GroupChannelService {
 
     public boolean setGroupChannelAssociationToInactive(String groupChannelId, String requester){
         return groupChannelMapper.setGroupChannelAssociationToInactive(groupChannelId, requester) == 1;
+    }
+
+    public boolean updateGroupChannelIdUser(String groupChannelId, String newGroupChannelIdUser, String owner){
+        return groupChannelMapper.updateGroupChannelIdUser(groupChannelId, newGroupChannelIdUser, owner) == 1;
+    }
+
+    public boolean updateAvatarHashWithGroupChannel(String avatarHash, String groupChannelId, String owner){
+        return groupChannelMapper.updateAvatarHashWithGroupChannel(avatarHash, groupChannelId, owner) == 1;
+    }
+
+    public boolean updateGroupChannelName(String groupChannelId, String newName, String owner){
+        return groupChannelMapper.updateGroupChannelName(groupChannelId, newName, owner) > 0;
+    }
+
+    public boolean updateGroupChannelAvatar(GroupChannelAvatar avatar, byte[] data){
+        return groupChannelMapper.updateGroupChannelAvatar(avatar, data) == 1;
+    }
+
+    public boolean updateGroupJoinVerificationEnabled(String groupChannelId, Boolean joinVerification, String owner){
+        return groupChannelMapper.updateGroupJoinVerification(groupChannelId, joinVerification, owner) == 1;
+    }
+
+    public void saveTransferManagerInviter(GroupChannelManagerTransfer groupChannelManagerTransfer) {
+        redisOperationService.GROUP_CHANNEL_MANAGE.saveInviter(groupChannelManagerTransfer);
+    }
+
+    public void saveTransferManagerInvitee(GroupChannelManagerTransfer groupChannelManagerTransfer) {
+        redisOperationService.GROUP_CHANNEL_MANAGE.saveInvitee(groupChannelManagerTransfer);
+    }
+
+    public boolean isTransferManagerInInviting(String inviterImessageId, String groupChannelId) {
+        return redisOperationService.GROUP_CHANNEL_MANAGE.isInInviting(inviterImessageId, groupChannelId);
     }
 }

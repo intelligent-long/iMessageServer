@@ -20,7 +20,7 @@ public class ChangeGroupChannelJoinVerificationPostBody {
         this.groupJoinVerification = groupJoinVerification;
     }
 
-    public Boolean getGroupJoinVerification() {
+    public Boolean getGroupJoinVerificationEnabled() {
         return groupJoinVerification;
     }
 

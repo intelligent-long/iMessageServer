@@ -522,10 +522,14 @@ public class GroupChannelController {
     @PostMapping("association/tag/channel/set")
     @Transactional
     public OperationStatus setChannelTags(@Valid @RequestBody SetGroupChannelTagsPostBody postBody, HttpSession session){
-        if(postBody.getNewTagNames().isEmpty() && postBody.getToAddTagIds().isEmpty() && postBody.getToRemoveTagIds().isEmpty()){
-            return new OperationStatus(-101, "请更改内容");
-        }
         User currentUser = sessionService.getUserOfSession(session);
+        if(!groupChannelService.isGroupChannelAssociated(postBody.getGroupChannelId(), currentUser.getImessageId())){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new OperationStatus(-101, "未建立关系");
+        }
+        if(postBody.getNewTagNames().isEmpty() && postBody.getToAddTagIds().isEmpty() && postBody.getToRemoveTagIds().isEmpty()){
+            return new OperationStatus(-102, "请更改内容");
+        }
         for (String newTagName : postBody.getNewTagNames()) {
             String tagId = groupChannelService.insertGroupChannelTag(currentUser.getImessageId(), newTagName);
             if(tagId == null){
@@ -748,50 +752,6 @@ public class GroupChannelController {
             });
             return OperationStatus.success();
         }
-    }
-
-    @PostMapping("disconnect/manage/{groupChannelId}")
-    @Transactional
-    public OperationStatus manageGroupChannelDisconnectChannel(@PathVariable("groupChannelId") String groupChannelId, @RequestBody ManageGroupChannelDisconnectPostBody postBody, HttpSession session){
-        User currentUser = sessionService.getUserOfSession(session);
-        String owner = groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getOwner();
-        if(!owner.equals(currentUser.getImessageId())){
-            return new OperationStatus(-101, "请联系群管理员进行频道管理。");
-        }
-        if(postBody.getChannelIds().isEmpty()){
-            return new OperationStatus(-102, "参数异常。");
-        }
-        for (String channelId : postBody.getChannelIds()) {
-            if(!groupChannelService.isGroupChannelAssociated(groupChannelId, channelId)){
-                return new OperationStatus(-102, "参数异常。");
-            }
-        }
-        if(postBody.getChannelIds().contains(currentUser.getImessageId()) || postBody.getChannelIds().contains(owner)){
-            return new OperationStatus(-103, "参数异常。");
-        }
-        List<String> associatedImessageIds = new ArrayList<>();
-        associatedImessageIds.add(currentUser.getImessageId());
-        groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
-            associatedImessageIds.add(groupChannelAssociation.getRequester().getImessageId());
-        });
-        for (String channelId : postBody.getChannelIds()) {
-            if(!groupChannelService.setGroupChannelAssociationToInactive(groupChannelId, channelId)){
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                return OperationStatus.failure();
-            }else {
-                GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.PASSIVE_DISCONNECT,
-                        groupChannelId, channelId, true, currentUser.getImessageId(), new Date(), false);
-                associatedImessageIds.forEach(associatedImessageId -> {
-                    redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(associatedImessageId, groupChannelNotification);
-                });
-            }
-        }
-        associatedImessageIds.forEach(associatedImessageId -> {
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
-            simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
-        });
-        return OperationStatus.success();
     }
 
     @GetMapping("group_channel_notifications")

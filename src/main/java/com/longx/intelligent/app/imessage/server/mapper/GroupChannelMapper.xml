@@ -123,7 +123,7 @@
         <result column="note" property="note"/>
         <result column="create_time" property="createTime"/>
         <result column="avatar_hash" property="avatarHash"/>
-        <result column="group_join_verification" property="groupJoinVerification"/>
+        <result column="group_join_verification_enabled" property="groupJoinVerificationEnabled"/>
         <association property="groupAvatar">
             <id property="hash" column="avatar_hash"/>
             <result property="groupChannelId" column="group_channel_id"/>
@@ -305,11 +305,11 @@
     </delete>
 
     <update id="updateGroupJoinVerification">
-        UPDATE group_channel SET group_join_verification = #{joinVerification} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
+        UPDATE group_channel SET group_join_verification_enabled = #{joinVerification} WHERE group_channel_id = #{groupChannelId} AND owner = #{owner}
     </update>
 
     <select id="isGroupJoinNeedVerification">
-        SELECT group_join_verification
+        SELECT group_join_verification_enabled
         FROM group_channel
         WHERE group_channel_id = #{groupChannelId}
     </select>

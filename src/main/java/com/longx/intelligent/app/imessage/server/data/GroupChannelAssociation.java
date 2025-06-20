@@ -61,4 +61,18 @@ public class GroupChannelAssociation {
     public String getInviteUuid() {
         return inviteUuid;
     }
+
+    @Override
+    public String toString() {
+        return "GroupChannelAssociation{" +
+                "associationId='" + associationId + '\'' +
+                ", groupChannelId='" + groupChannelId + '\'' +
+                ", owner='" + owner + '\'' +
+                ", requester=" + requester +
+                ", requestMessage='" + requestMessage + '\'' +
+                ", requestTime=" + requestTime +
+                ", acceptTime=" + acceptTime +
+                ", inviteUuid='" + inviteUuid + '\'' +
+                '}';
+    }
 }
