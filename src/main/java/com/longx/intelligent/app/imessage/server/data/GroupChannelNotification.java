@@ -6,7 +6,7 @@ import java.util.Date;
  * Created by LONG on 2025/6/14 at 7:09 AM.
  */
 public class GroupChannelNotification {
-    public enum Type{ACTIVE_DISCONNECT, PASSIVE_DISCONNECT, INVITE_TRANSFER_MANAGER}
+    public enum Type{ACTIVE_DISCONNECT, PASSIVE_DISCONNECT, INVITE_TRANSFER_MANAGER, ACCEPTED_TRANSFER_MANAGER}
     private String uuid;
     private Type type;
     private String groupChannelId;

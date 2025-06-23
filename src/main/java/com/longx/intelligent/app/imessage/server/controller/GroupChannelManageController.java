@@ -156,12 +156,15 @@ public class GroupChannelManageController {
             }
         }
         if(!inGroup) return new OperationStatus(-101, "非法身份。");
+        if(groupChannel.getOwner().equals(notification.getChannelId())) return new OperationStatus(-102, "已经是管理员。");
         if(!groupChannelService.changeGroupChannelOwner(notification.getGroupChannelId(), notification.getChannelId())){
             return OperationStatus.failure();
         }
-        if(groupChannel.getOwner().equals(notification.getChannelId())) return new OperationStatus(-102, "已经是管理员。");
+        GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.ACCEPTED_TRANSFER_MANAGER, groupChannel.getGroupChannelId(),
+                notification.getChannelId(), null, notification.getByWhom(), new Date(), false);
         groupChannel.getGroupChannelAssociations().forEach(groupChannelAssociation -> {
             String memberId = groupChannelAssociation.getRequester().getImessageId();
+            groupChannelService.saveNotification(memberId, groupChannelNotification);
             simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
