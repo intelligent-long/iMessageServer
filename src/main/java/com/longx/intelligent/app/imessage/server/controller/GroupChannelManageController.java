@@ -1,6 +1,7 @@
 package com.longx.intelligent.app.imessage.server.controller;
 
 import com.longx.intelligent.app.imessage.server.data.*;
+import com.longx.intelligent.app.imessage.server.data.request.AcceptTransferGroupChannelManagerPostBody;
 import com.longx.intelligent.app.imessage.server.data.request.ChangeGroupChannelJoinVerificationPostBody;
 import com.longx.intelligent.app.imessage.server.data.request.ManageGroupChannelDisconnectPostBody;
 import com.longx.intelligent.app.imessage.server.data.request.TransferGroupChannelManagerPostBody;
@@ -9,6 +10,7 @@ import com.longx.intelligent.app.imessage.server.service.ChannelService;
 import com.longx.intelligent.app.imessage.server.service.GroupChannelService;
 import com.longx.intelligent.app.imessage.server.service.RedisOperationService;
 import com.longx.intelligent.app.imessage.server.service.SessionService;
+import com.longx.intelligent.app.imessage.server.util.ErrorLogger;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -32,8 +34,6 @@ public class GroupChannelManageController {
     private GroupChannelService groupChannelService;
     @Autowired
     private SimpMessagingTemplate simpMessagingTemplate;
-    @Autowired
-    private RedisOperationService redisOperationService;
     @Autowired
     private ChannelService channelService;
 
@@ -93,7 +93,7 @@ public class GroupChannelManageController {
                 GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.PASSIVE_DISCONNECT,
                         groupChannelId, channelId, true, currentUser.getImessageId(), new Date(), false);
                 associatedImessageIds.forEach(associatedImessageId -> {
-                    redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(associatedImessageId, groupChannelNotification);
+                    groupChannelService.saveNotification(associatedImessageId, groupChannelNotification);
                 });
             }
         }
@@ -105,8 +105,8 @@ public class GroupChannelManageController {
         return OperationStatus.success();
     }
 
-    @PostMapping("transfer_manager")
-    public OperationStatus transferGroupChannelManager(@Valid @RequestBody TransferGroupChannelManagerPostBody postBody, HttpSession session){
+    @PostMapping("transfer_manager/invite")
+    public OperationStatus inviteTransferGroupChannelManager(@Valid @RequestBody TransferGroupChannelManagerPostBody postBody, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         GroupChannel toTransferGroupChannel = groupChannelService.findGroupChannelById(postBody.getToTransferGroupChannelId(), currentUser.getImessageId());
         if(toTransferGroupChannel == null){
@@ -130,12 +130,41 @@ public class GroupChannelManageController {
         GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.INVITE_TRANSFER_MANAGER,
                 postBody.getToTransferGroupChannelId(), postBody.getTransferToChannelId(), null, currentUser.getImessageId(), new Date(), false);
         receiveNotificationsImessageIds.forEach(receiveNotificationsImessageId -> {
-            redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(receiveNotificationsImessageId, groupChannelNotification);
+            groupChannelService.saveNotification(receiveNotificationsImessageId, groupChannelNotification);
         });
         receiveNotificationsImessageIds.forEach(receiveNotificationsImessageId -> {
             simpMessagingTemplate.convertAndSendToUser(receiveNotificationsImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(receiveNotificationsImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(receiveNotificationsImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
+        });
+        return OperationStatus.success();
+    }
+
+    @PostMapping("transfer_manager/accept")
+    public OperationStatus acceptTransferGroupChannelManager(@RequestBody AcceptTransferGroupChannelManagerPostBody postBody, HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        GroupChannelNotification notification = groupChannelService.findNotification(postBody.getUuid());
+        if(notification == null) return OperationStatus.failure();
+        if(notification.getType() != GroupChannelNotification.Type.INVITE_TRANSFER_MANAGER) return OperationStatus.failure();
+        if(!notification.getChannelId().equals(currentUser.getImessageId())) return new OperationStatus(-101, "非法身份。");
+        GroupChannel groupChannel = groupChannelService.findGroupChannelById(notification.getGroupChannelId(), currentUser.getImessageId());
+        boolean inGroup = false;
+        for (GroupChannelAssociation groupChannelAssociation : groupChannel.getGroupChannelAssociations()) {
+            if (groupChannelAssociation.getRequester().getImessageId().equals(notification.getChannelId())) {
+                inGroup = true;
+                break;
+            }
+        }
+        if(!inGroup) return new OperationStatus(-101, "非法身份。");
+        if(!groupChannelService.changeGroupChannelOwner(notification.getGroupChannelId(), notification.getChannelId())){
+            return OperationStatus.failure();
+        }
+        if(groupChannel.getOwner().equals(notification.getChannelId())) return new OperationStatus(-102, "已经是管理员。");
+        groupChannel.getGroupChannelAssociations().forEach(groupChannelAssociation -> {
+            String memberId = groupChannelAssociation.getRequester().getImessageId();
+            simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
         });
         return OperationStatus.success();
     }

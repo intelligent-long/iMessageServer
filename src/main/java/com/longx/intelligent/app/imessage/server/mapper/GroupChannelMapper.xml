@@ -313,4 +313,8 @@
         FROM group_channel
         WHERE group_channel_id = #{groupChannelId}
     </select>
+
+    <update id="changeGroupChannelOwner">
+        UPDATE group_channel SET owner = #{changeToChannelId} WHERE group_channel_id = #{groupChannelId}
+    </update>
 </mapper>

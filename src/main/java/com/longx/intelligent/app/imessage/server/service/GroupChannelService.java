@@ -258,4 +258,16 @@ public class GroupChannelService {
         }
         return false;
     }
+
+    public void saveNotification(String toFetchChannelId, GroupChannelNotification groupChannelNotification){
+        redisOperationService.GROUP_CHANNEL_NOTIFICATION.saveNotification(toFetchChannelId, groupChannelNotification);
+    }
+
+    public GroupChannelNotification findNotification(String uuid){
+        return redisOperationService.GROUP_CHANNEL_NOTIFICATION.findNotification(uuid);
+    }
+
+    public boolean changeGroupChannelOwner(String groupChannelId, String changeToChannelId){
+        return groupChannelMapper.changeGroupChannelOwner(groupChannelId, changeToChannelId) == 1;
+    }
 }

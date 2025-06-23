@@ -72,4 +72,6 @@ public interface GroupChannelMapper {
     Boolean isGroupJoinNeedVerification(String groupChannelId);
 
     int setGroupChannelAssociationToInactive(String groupChannelId, String requester);
+
+    int changeGroupChannelOwner(String groupChannelId, String changeToChannelId);
 }

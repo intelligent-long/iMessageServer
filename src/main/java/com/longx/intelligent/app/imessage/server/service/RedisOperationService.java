@@ -1177,6 +1177,28 @@ public class RedisOperationService {
             redisOperator.expireForHash(disconnectionKey, Constants.GROUP_CHANNEL_NOTIFICATION_RECORD_DURATION_DAY, TimeUnit.DAYS);
         }
 
+        public com.longx.intelligent.app.imessage.server.data.GroupChannelNotification findNotification(String uuid){
+            Set<String> keys = redisOperator.stringKeys("*" + uuid + "*");
+            String key = null;
+            for (String k : keys) {
+                if(k.contains("group_channel_notification")){
+                    key = k;
+                    break;
+                }
+            }
+            if(key == null) return null;
+            String[] split = key.split(":");
+            String groupChannelId = split[3];
+            String channelId = split[4];
+            com.longx.intelligent.app.imessage.server.data.GroupChannelNotification.Type type = com.longx.intelligent.app.imessage.server.data.GroupChannelNotification.Type
+                    .valueOf((String) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.TYPE));
+            Boolean passive = (Boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.PASSIVE);
+            boolean isViewed = (boolean) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.IS_VIEWED);
+            String byWhom = (String) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.BY_WHOM);
+            Date time = new Date((Long) redisOperator.hGet(key, RedisKeys.GroupChannelNotification.NotificationHashKey.TIME));
+            return new com.longx.intelligent.app.imessage.server.data.GroupChannelNotification(uuid, type, groupChannelId, channelId, passive, byWhom, time, isViewed);
+        }
+
         public List<com.longx.intelligent.app.imessage.server.data.GroupChannelNotification> getNotifications(String toFetchChannelId) {
             String notificationWithToFetchChannelId = RedisKeys.GroupChannelNotification.getNotificationWithToFetchChannelId(toFetchChannelId);
             Set<String> keys = redisOperator.keys(notificationWithToFetchChannelId);
