@@ -7,7 +7,7 @@
     </insert>
 
     <select id="findGroupChannelById" resultMap="GroupChannelMap">
-        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id, CASE WHEN gc.is_active THEN false ELSE true END AS is_terminated
         FROM group_channel gc
         LEFT JOIN group_channel_note gcn ON gc.group_channel_id = gcn.group_channel_id AND gcn.is_active = true
         LEFT JOIN amap_district_1st_level d1l ON gc.1st_level_adcode = d1l.1st_level_adcode
@@ -17,7 +17,7 @@
     </select>
 
     <select id="findGroupChannelByIdUser" resultMap="GroupChannelMap">
-        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id, CASE WHEN gc.is_active THEN false ELSE true END AS is_terminated
         FROM group_channel gc
                  LEFT JOIN group_channel_note gcn ON gc.group_channel_id = gcn.group_channel_id AND gcn.is_active = true
                  LEFT JOIN amap_district_1st_level d1l ON gc.1st_level_adcode = d1l.1st_level_adcode
@@ -25,6 +25,26 @@
                  LEFT JOIN amap_district_3rd_level d3l ON gc.3rd_level_adcode = d3l.3rd_level_adcode
         WHERE gc.group_channel_id_user = #{groupChannelIdUser}
           AND gc.is_active = true
+    </select>
+
+    <select id="findGroupChannelByIdIncludeInactive" resultMap="GroupChannelMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id, CASE WHEN gc.is_active THEN false ELSE true END AS is_terminated
+        FROM group_channel gc
+                 LEFT JOIN group_channel_note gcn ON gc.group_channel_id = gcn.group_channel_id AND gcn.is_active = true
+                 LEFT JOIN amap_district_1st_level d1l ON gc.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON gc.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON gc.3rd_level_adcode = d3l.3rd_level_adcode
+        WHERE gc.group_channel_id = #{groupChannelId}
+    </select>
+
+    <select id="findGroupChannelByIdUserIncludeInactive" resultMap="GroupChannelMap">
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id, CASE WHEN gc.is_active THEN false ELSE true END AS is_terminated
+        FROM group_channel gc
+                 LEFT JOIN group_channel_note gcn ON gc.group_channel_id = gcn.group_channel_id AND gcn.is_active = true
+                 LEFT JOIN amap_district_1st_level d1l ON gc.1st_level_adcode = d1l.1st_level_adcode
+                 LEFT JOIN amap_district_2nd_level d2l ON gc.2nd_level_adcode = d2l.2nd_level_adcode
+                 LEFT JOIN amap_district_3rd_level d3l ON gc.3rd_level_adcode = d3l.3rd_level_adcode
+        WHERE gc.group_channel_id_user = #{groupChannelIdUser}
     </select>
 
     <select id="findGroupChannelTagMaxOrder">
@@ -86,7 +106,7 @@
     </select>
 
     <select id="findAllAssociatedGroupChannels" resultMap="GroupChannelMap">
-        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id, CASE WHEN gc.is_active THEN false ELSE true END AS is_terminated
         FROM group_channel gc
                  LEFT JOIN group_channel_note gcn
                            ON gc.group_channel_id = gcn.group_channel_id AND gcn.imessage_id = #{currentUserId} AND
@@ -102,7 +122,7 @@
     </select>
 
     <select id="findAllOwnerGroupChannels" resultMap="GroupChannelMap">
-        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id
+        SELECT *, d1l.name d1lName, d2l.name d2lName, d3l.name d3lName, #{currentUserId} AS current_user_id, CASE WHEN gc.is_active THEN false ELSE true END AS is_terminated
         FROM group_channel gc
                  LEFT JOIN group_channel_note gcn
                            ON gc.group_channel_id = gcn.group_channel_id AND gcn.imessage_id = #{currentUserId} AND
@@ -124,6 +144,7 @@
         <result column="create_time" property="createTime"/>
         <result column="avatar_hash" property="avatarHash"/>
         <result column="group_join_verification_enabled" property="groupJoinVerificationEnabled"/>
+        <result column="is_terminated" property="isTerminated"/>
         <association property="groupAvatar">
             <id property="hash" column="avatar_hash"/>
             <result property="groupChannelId" column="group_channel_id"/>

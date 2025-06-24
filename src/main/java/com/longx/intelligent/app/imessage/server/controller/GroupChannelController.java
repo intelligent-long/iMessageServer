@@ -56,13 +56,21 @@ public class GroupChannelController {
     private RedisOperationService redisOperationService;
 
     @GetMapping("find/group_channel_id/{groupChannelId}")
-    public OperationData findGroupChannelById(@PathVariable String groupChannelId, @RequestParam(defaultValue = "idUser") String queryType, HttpSession session){
+    public OperationData findGroupChannelById(@PathVariable String groupChannelId, @RequestParam(defaultValue = "idUser") String queryType, @RequestParam(defaultValue = "false") boolean includeInactive, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         GroupChannel groupChannel = null;
-        if(queryType.equals("idUser")){
-            groupChannel = groupChannelService.findGroupChannelByIdUser(groupChannelId, currentUser.getImessageId());
-        }else if(queryType.equals("id")) {
-            groupChannel = groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId());
+        if(!includeInactive) {
+            if (queryType.equals("idUser")) {
+                groupChannel = groupChannelService.findGroupChannelByIdUser(groupChannelId, currentUser.getImessageId());
+            } else if (queryType.equals("id")) {
+                groupChannel = groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId());
+            }
+        }else {
+            if (queryType.equals("idUser")) {
+                groupChannel = groupChannelService.findGroupChannelByIdUserIncludeInactive(groupChannelId, currentUser.getImessageId());
+            } else if (queryType.equals("id")) {
+                groupChannel = groupChannelService.findGroupChannelByIdIncludeInactive(groupChannelId, currentUser.getImessageId());
+            }
         }
         if(groupChannel == null) return new OperationData(-101, "无内容");
         return OperationData.success(groupChannel);

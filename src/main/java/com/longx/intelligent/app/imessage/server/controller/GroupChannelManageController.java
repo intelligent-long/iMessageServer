@@ -185,8 +185,11 @@ public class GroupChannelManageController {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return OperationStatus.failure();
         }
+        GroupChannelNotification groupChannelNotification = new GroupChannelNotification(UUID.randomUUID().toString(), GroupChannelNotification.Type.TERMINATED_GROUP_CHANNEL, groupChannel.getGroupChannelId(),
+                currentUser.getImessageId(), null, null, new Date(), false);
         groupChannelAssociations.forEach(groupChannelAssociation -> {
             String memberId = groupChannelAssociation.getRequester().getImessageId();
+            groupChannelService.saveNotification(memberId, groupChannelNotification);
             simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
             simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNELS_UPDATE, "");

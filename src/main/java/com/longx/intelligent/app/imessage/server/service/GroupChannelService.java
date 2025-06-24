@@ -102,6 +102,14 @@ public class GroupChannelService {
         return groupChannelMapper.findGroupChannelByIdUser(groupChannelIdUser, currentUserId);
     }
 
+    public GroupChannel findGroupChannelByIdIncludeInactive(String groupChannelId, String currentUserId){
+        return groupChannelMapper.findGroupChannelByIdIncludeInactive(groupChannelId, currentUserId);
+    }
+
+    public GroupChannel findGroupChannelByIdUserIncludeInactive(String groupChannelIdUser, String currentUserId){
+        return groupChannelMapper.findGroupChannelByIdUserIncludeInactive(groupChannelIdUser, currentUserId);
+    }
+
     public Date findGroupChannelIdUserLastChangeTime(String groupChannelId){
         return groupChannelMapper.findGroupChannelIdUserLastChangeTime(groupChannelId);
     }

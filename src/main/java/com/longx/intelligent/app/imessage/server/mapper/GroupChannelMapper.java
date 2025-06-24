@@ -17,6 +17,10 @@ public interface GroupChannelMapper {
 
     GroupChannel findGroupChannelByIdUser(String groupChannelIdUser, String currentUserId);
 
+    GroupChannel findGroupChannelByIdIncludeInactive(String groupChannelId, String currentUserId);
+
+    GroupChannel findGroupChannelByIdUserIncludeInactive(String groupChannelIdUser, String currentUserId);
+
     Integer findGroupChannelTagMaxOrder(String imessageId);
 
     int insertGroupChannelTag(String tagId, String imessageId, String name, int order);

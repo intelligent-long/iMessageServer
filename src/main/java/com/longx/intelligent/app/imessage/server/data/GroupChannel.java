@@ -20,13 +20,14 @@ public class GroupChannel {
     private Region thirdRegion;
     private String avatarHash;
     private Boolean groupJoinVerificationEnabled;
+    private boolean isTerminated;
 
     public GroupChannel() {
     }
 
     public GroupChannel(GroupAvatar groupAvatar, String groupChannelId, String groupChannelIdUser, String owner, String name,
                         String note, Date createTime, List<GroupChannelAssociation> groupChannelAssociations, Region firstRegion,
-                        Region secondRegion, Region thirdRegion, String avatarHash, Boolean groupJoinVerificationEnabled) {
+                        Region secondRegion, Region thirdRegion, String avatarHash, Boolean groupJoinVerificationEnabled, boolean isTerminate) {
         this.groupAvatar = groupAvatar;
         this.groupChannelId = groupChannelId;
         this.groupChannelIdUser = groupChannelIdUser;
@@ -40,6 +41,7 @@ public class GroupChannel {
         this.thirdRegion = thirdRegion;
         this.avatarHash = avatarHash;
         this.groupJoinVerificationEnabled = groupJoinVerificationEnabled;
+        this.isTerminated = isTerminate;
     }
 
     public GroupAvatar getGroupAvatar() {
@@ -94,6 +96,10 @@ public class GroupChannel {
         return groupJoinVerificationEnabled;
     }
 
+    public boolean isTerminated() {
+        return isTerminated;
+    }
+
     @Override
     public String toString() {
         return "GroupChannel{" +
@@ -110,6 +116,7 @@ public class GroupChannel {
                 ", thirdRegion=" + thirdRegion +
                 ", avatarHash='" + avatarHash + '\'' +
                 ", groupJoinVerificationEnabled=" + groupJoinVerificationEnabled +
+                ", isTerminated=" + isTerminated +
                 '}';
     }
 }
