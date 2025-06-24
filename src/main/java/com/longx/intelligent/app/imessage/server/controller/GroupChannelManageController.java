@@ -172,4 +172,26 @@ public class GroupChannelManageController {
         return OperationStatus.success();
     }
 
+    @PostMapping("terminate/{groupChannelId}")
+    @Transactional
+    public OperationStatus terminateGroupChannel(@PathVariable("groupChannelId") String groupChannelId, HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        GroupChannel groupChannel = groupChannelService.findGroupChannelById(groupChannelId, currentUser.getImessageId());
+        if(groupChannel == null) return new OperationStatus(-101, "没有群频道。");
+        if(!groupChannel.getOwner().equals(currentUser.getImessageId())) return new OperationStatus(-102, "非法身份。");
+        List<GroupChannelAssociation> groupChannelAssociations = groupChannel.getGroupChannelAssociations();
+        boolean success = groupChannelService.terminateGroupChannel(groupChannelId);
+        if(!success){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return OperationStatus.failure();
+        }
+        groupChannelAssociations.forEach(groupChannelAssociation -> {
+            String memberId = groupChannelAssociation.getRequester().getImessageId();
+            simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
+            simpMessagingTemplate.convertAndSendToUser(memberId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
+        });
+        return OperationStatus.success();
+    }
+
 }

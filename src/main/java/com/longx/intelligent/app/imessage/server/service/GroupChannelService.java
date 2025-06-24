@@ -2,6 +2,7 @@ package com.longx.intelligent.app.imessage.server.service;
 
 import com.longx.intelligent.app.imessage.server.data.*;
 import com.longx.intelligent.app.imessage.server.mapper.GroupChannelMapper;
+import com.longx.intelligent.app.imessage.server.util.ErrorLogger;
 import com.longx.intelligent.app.imessage.server.util.NanoIdUtil;
 import com.longx.intelligent.app.imessage.server.util.StringUtil;
 import com.longx.intelligent.app.imessage.server.value.Constants;
@@ -269,5 +270,29 @@ public class GroupChannelService {
 
     public boolean changeGroupChannelOwner(String groupChannelId, String changeToChannelId){
         return groupChannelMapper.changeGroupChannelOwner(groupChannelId, changeToChannelId) == 1;
+    }
+
+    public boolean updateGroupChannelToInactive(String groupChannelId){
+        return groupChannelMapper.updateGroupChannelToInactive(groupChannelId) == 1;
+    }
+
+    public boolean setAllGroupChannelAssociationToInactive(String groupChannelId){
+        return groupChannelMapper.setAllGroupChannelAssociationToInactive(groupChannelId) > 0;
+    }
+
+    public boolean updateAllGroupChannelNoteToInactive(String groupChannelId){
+        return groupChannelMapper.updateAllGroupChannelNoteToInactive(groupChannelId) >= 0;
+    }
+
+    public boolean updateAllGroupChannelTagToInactive(String groupChannelId){
+        return groupChannelMapper.updateAllGroupChannelTagToInactive(groupChannelId) >= 0;
+    }
+
+    public boolean terminateGroupChannel(String groupChannelId){
+        boolean success = updateGroupChannelToInactive(groupChannelId);
+        boolean success1 = setAllGroupChannelAssociationToInactive(groupChannelId);
+        boolean success2 = updateAllGroupChannelNoteToInactive(groupChannelId);
+        boolean success3 = updateAllGroupChannelTagToInactive(groupChannelId);
+        return success && success1 && success2 && success3;
     }
 }

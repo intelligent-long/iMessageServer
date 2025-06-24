@@ -317,4 +317,23 @@
     <update id="changeGroupChannelOwner">
         UPDATE group_channel SET owner = #{changeToChannelId} WHERE group_channel_id = #{groupChannelId}
     </update>
+
+    <update id="updateGroupChannelToInactive">
+        UPDATE group_channel SET is_active = false WHERE group_channel_id = #{groupChannelId}
+    </update>
+
+    <update id="setAllGroupChannelAssociationToInactive">
+        UPDATE group_channel_association SET is_active = false WHERE group_channel_id = #{groupChannelId}
+    </update>
+
+    <update id="updateAllGroupChannelNoteToInactive">
+        UPDATE group_channel_note SET is_active = false WHERE group_channel_id = #{groupChannelId}
+    </update>
+
+    <update id="updateAllGroupChannelTagToInactive">
+        UPDATE group_channel_tag gct
+        JOIN group_channel_tag_group_channel gctgc ON gct.tag_id = gctgc.tag_id
+        SET gct.is_active = FALSE
+        WHERE gctgc.group_channel_id = #{groupChannelId}
+    </update>
 </mapper>

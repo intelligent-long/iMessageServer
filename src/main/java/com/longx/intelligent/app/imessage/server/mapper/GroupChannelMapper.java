@@ -73,5 +73,13 @@ public interface GroupChannelMapper {
 
     int setGroupChannelAssociationToInactive(String groupChannelId, String requester);
 
+    int setAllGroupChannelAssociationToInactive(String groupChannelId);
+
     int changeGroupChannelOwner(String groupChannelId, String changeToChannelId);
+
+    int updateGroupChannelToInactive(String groupChannelId);
+
+    int updateAllGroupChannelNoteToInactive(String groupChannelId);
+
+    int updateAllGroupChannelTagToInactive(String groupChannelId);
 }
