@@ -95,4 +95,9 @@ public class SubscribeController {
         return "";
     }
 
+    @SubscribeMapping(StompDestinations.GROUP_CHANNEL_COLLECTIONS_UPDATE)
+    public Object onSubscribeGroupChannelCollectionsUpdate(){
+        return "";
+    }
+
 }

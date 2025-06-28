@@ -357,4 +357,23 @@
         SET gct.is_active = FALSE
         WHERE gctgc.group_channel_id = #{groupChannelId}
     </update>
+
+    <select id="findAllGroupChannelCollections" resultType="com.longx.intelligent.app.imessage.server.data.GroupChannelCollectionItem">
+        SELECT uuid, owner, group_channel_id groupChannelId, add_time addTime, `order`, is_active isActive
+        FROM group_channel_collection
+        WHERE owner = #{owner} AND is_active = true
+    </select>
+
+    <select id="getMaxOrder" resultType="int">
+        SELECT IFNULL(MAX(`order`), 0) FROM group_channel_collection WHERE is_active = true
+    </select>
+
+    <insert id="addGroupChannelCollection">
+        INSERT INTO group_channel_collection(uuid, owner, group_channel_id, add_time, `order`, is_active)
+        VALUES (#{uuid}, #{owner}, #{groupChannelId}, #{addTime}, #{order}, true)
+    </insert>
+
+    <delete id="removeGroupChannelCollection">
+        UPDATE group_channel_collection SET is_active = false WHERE uuid = #{uuid} AND owner = #{owner} AND is_active = true
+    </delete>
 </mapper>

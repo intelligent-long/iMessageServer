@@ -86,4 +86,12 @@ public interface GroupChannelMapper {
     int updateAllGroupChannelNoteToInactive(String groupChannelId);
 
     int updateAllGroupChannelTagToInactive(String groupChannelId);
+
+    List<GroupChannelCollectionItem> findAllGroupChannelCollections(String owner);
+
+    int getMaxOrder();
+
+    int addGroupChannelCollection(GroupChannelCollectionItem groupChannelCollectionItem);
+
+    int removeGroupChannelCollection(String uuid, String owner);
 }

@@ -2,7 +2,6 @@ package com.longx.intelligent.app.imessage.server.service;
 
 import com.longx.intelligent.app.imessage.server.data.*;
 import com.longx.intelligent.app.imessage.server.mapper.GroupChannelMapper;
-import com.longx.intelligent.app.imessage.server.util.ErrorLogger;
 import com.longx.intelligent.app.imessage.server.util.NanoIdUtil;
 import com.longx.intelligent.app.imessage.server.util.StringUtil;
 import com.longx.intelligent.app.imessage.server.value.Constants;
@@ -302,5 +301,25 @@ public class GroupChannelService {
         boolean success2 = updateAllGroupChannelNoteToInactive(groupChannelId);
         boolean success3 = updateAllGroupChannelTagToInactive(groupChannelId);
         return success && success1 && success2 && success3;
+    }
+
+    public List<GroupChannelCollectionItem> findAllGroupChannelCollections(String owner) {
+        return groupChannelMapper.findAllGroupChannelCollections(owner);
+    }
+
+    public boolean addGroupChannelCollection(User currentUser, GroupChannelCollectionItem groupChannelCollectionItem){
+        List<GroupChannelCollectionItem> allGroupChannelCollections = findAllGroupChannelCollections(currentUser.getImessageId());
+        for (GroupChannelCollectionItem allGroupChannelCollection : allGroupChannelCollections) {
+            if(allGroupChannelCollection.isActive() && allGroupChannelCollection.getGroupChannelId().equals(groupChannelCollectionItem.getGroupChannelId())){
+                return false;
+            }
+        }
+        int maxOrder = groupChannelMapper.getMaxOrder();
+        groupChannelCollectionItem.setOrder(maxOrder + 1);
+        return groupChannelMapper.addGroupChannelCollection(groupChannelCollectionItem) == 1;
+    }
+
+    public boolean removeGroupChannelCollection(String uuid, String owner){
+        return groupChannelMapper.removeGroupChannelCollection(uuid, owner) == 1;
     }
 }

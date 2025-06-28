@@ -244,7 +244,7 @@
     </select>
 
     <select id="getMaxOrder" resultType="int">
-        SELECT IFNULL(MAX(`order`), 0) FROM channel_collection
+        SELECT IFNULL(MAX(`order`), 0) FROM channel_collection WHERE is_active = true
     </select>
 
     <insert id="addChannelCollection">
