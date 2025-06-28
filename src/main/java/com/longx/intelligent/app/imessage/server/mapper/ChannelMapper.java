@@ -2,6 +2,7 @@ package com.longx.intelligent.app.imessage.server.mapper;
 
 import com.longx.intelligent.app.imessage.server.data.Channel;
 import com.longx.intelligent.app.imessage.server.data.ChannelAssociation;
+import com.longx.intelligent.app.imessage.server.data.ChannelCollectionItem;
 import com.longx.intelligent.app.imessage.server.data.ChannelTag;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -54,4 +55,12 @@ public interface ChannelMapper {
     int updateChannelTagToInactive(String tagId, String imessageId);
 
     int deleteAllTagChannel(String tagId, String imessageId);
+
+    List<ChannelCollectionItem> findAllChannelCollections(String owner);
+
+    int getMaxOrder();
+
+    int addChannelCollection(ChannelCollectionItem channelCollectionItem);
+
+    int removeChannelCollection(String uuid, String owner);
 }

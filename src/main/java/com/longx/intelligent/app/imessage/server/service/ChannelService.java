@@ -224,4 +224,24 @@ public class ChannelService {
     public boolean deleteAllTagChannel(String tagId, String imessageId){
         return channelMapper.deleteAllTagChannel(tagId, imessageId) >= 0;
     }
+
+    public List<ChannelCollectionItem> findAllChannelCollections(String owner){
+        return channelMapper.findAllChannelCollections(owner);
+    }
+
+    public boolean addChannelCollection(User currentUser, ChannelCollectionItem channelCollectionItem){
+        List<ChannelCollectionItem> allChannelCollections = findAllChannelCollections(currentUser.getImessageId());
+        for (ChannelCollectionItem allChannelCollection : allChannelCollections) {
+            if(allChannelCollection.isActive() && allChannelCollection.getChannelId().equals(channelCollectionItem.getChannelId())){
+                return false;
+            }
+        }
+        int maxOrder = channelMapper.getMaxOrder();
+        channelCollectionItem.setOrder(maxOrder + 1);
+        return channelMapper.addChannelCollection(channelCollectionItem) == 1;
+    }
+
+    public boolean removeChannelCollection(String uuid, String owner){
+        return channelMapper.removeChannelCollection(uuid, owner) == 1;
+    }
 }

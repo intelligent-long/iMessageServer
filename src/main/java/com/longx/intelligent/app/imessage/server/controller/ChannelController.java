@@ -438,4 +438,42 @@ public class ChannelController {
         simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.CHANNEL_TAGS_UPDATE, "");
         return OperationStatus.success();
     }
+
+    @GetMapping("collection")
+    public OperationData getChannelCollection(HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        List<ChannelCollectionItem> allChannelCollections = channelService.findAllChannelCollections(currentUser.getImessageId());
+        return OperationData.success(allChannelCollections);
+    }
+
+    @PostMapping("collection/add")
+    @Transactional
+    public OperationStatus addChannelCollection(@RequestBody AddChannelCollectionPostBody postBody, HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        List<String> channelIds = postBody.getChannelIds();
+        for (String channelId : channelIds) {
+            ChannelCollectionItem channelCollectionItem = new ChannelCollectionItem(UUID.randomUUID().toString(), currentUser.getImessageId(), channelId, new Date(), null, true);
+            if(!channelService.addChannelCollection(currentUser, channelCollectionItem)){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return OperationStatus.failure();
+            }
+        }
+        simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.CHANNEL_COLLECTIONS_UPDATE, "");
+        return OperationStatus.success();
+    }
+
+    @PostMapping("collection/remove")
+    @Transactional
+    public OperationStatus removeChannelCollection(@RequestBody RemoveChannelCollectionPostBody postBody, HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        List<String> uuids = postBody.getUuids();
+        for (String uuid : uuids) {
+            if(!channelService.removeChannelCollection(uuid, currentUser.getImessageId())){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return OperationStatus.failure();
+            }
+        }
+        simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.CHANNEL_COLLECTIONS_UPDATE, "");
+        return OperationStatus.success();
+    }
 }

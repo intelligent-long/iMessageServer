@@ -236,4 +236,23 @@
                  ) AS subquery
         );
     </delete>
+
+    <select id="findAllChannelCollections" resultType="com.longx.intelligent.app.imessage.server.data.ChannelCollectionItem">
+        SELECT uuid, owner, channel_id channelId, add_time addTime, `order`, is_active isActive
+        FROM channel_collection
+        WHERE owner = #{owner} AND is_active = true
+    </select>
+
+    <select id="getMaxOrder" resultType="int">
+        SELECT IFNULL(MAX(`order`), 0) FROM channel_collection
+    </select>
+
+    <insert id="addChannelCollection">
+        INSERT INTO channel_collection(uuid, owner, channel_id, add_time, `order`, is_active)
+        VALUES (#{uuid}, #{owner}, #{channelId}, #{addTime}, #{order}, true)
+    </insert>
+
+    <delete id="removeChannelCollection">
+        UPDATE channel_collection SET is_active = false WHERE uuid = #{uuid} AND owner = #{owner} AND is_active = true
+    </delete>
 </mapper>
