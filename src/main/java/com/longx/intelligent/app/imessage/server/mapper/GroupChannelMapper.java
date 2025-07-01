@@ -94,4 +94,6 @@ public interface GroupChannelMapper {
     int addGroupChannelCollection(GroupChannelCollectionItem groupChannelCollectionItem);
 
     int removeGroupChannelCollection(String uuid, String owner);
+
+    int updateGroupChannelCollectionOrder(String uuid, String owner, int order);
 }

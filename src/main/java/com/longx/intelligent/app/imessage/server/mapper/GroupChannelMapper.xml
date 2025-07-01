@@ -376,4 +376,8 @@
     <delete id="removeGroupChannelCollection">
         UPDATE group_channel_collection SET is_active = false WHERE uuid = #{uuid} AND owner = #{owner} AND is_active = true
     </delete>
+
+    <update id="updateGroupChannelCollectionOrder">
+        UPDATE group_channel_collection SET `order` = #{order} WHERE uuid = #{uuid} AND owner = #{owner} AND is_active = true;
+    </update>
 </mapper>

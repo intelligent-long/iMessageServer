@@ -63,4 +63,6 @@ public interface ChannelMapper {
     int addChannelCollection(ChannelCollectionItem channelCollectionItem);
 
     int removeChannelCollection(String uuid, String owner);
+
+    int updateChannelCollectionOrder(String uuid, String owner, int order);
 }

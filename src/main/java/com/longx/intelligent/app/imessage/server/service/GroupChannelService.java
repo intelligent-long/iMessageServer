@@ -322,4 +322,8 @@ public class GroupChannelService {
     public boolean removeGroupChannelCollection(String uuid, String owner){
         return groupChannelMapper.removeGroupChannelCollection(uuid, owner) == 1;
     }
+
+    public boolean updateGroupChannelCollectionOrder(String groupChannelCollectionUuid, String owner, int order){
+        return groupChannelMapper.updateGroupChannelCollectionOrder(groupChannelCollectionUuid, owner, order) == 1;
+    }
 }

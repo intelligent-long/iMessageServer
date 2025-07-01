@@ -8,6 +8,7 @@ import com.longx.intelligent.app.imessage.server.service.ChannelService;
 import com.longx.intelligent.app.imessage.server.service.PermissionService;
 import com.longx.intelligent.app.imessage.server.service.SessionService;
 import com.longx.intelligent.app.imessage.server.service.UserService;
+import com.longx.intelligent.app.imessage.server.util.ErrorLogger;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -471,6 +472,88 @@ public class ChannelController {
             if(!channelService.removeChannelCollection(uuid, currentUser.getImessageId())){
                 TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
                 return OperationStatus.failure();
+            }
+        }
+        simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.CHANNEL_COLLECTIONS_UPDATE, "");
+        return OperationStatus.success();
+    }
+
+    @PostMapping("collection/sort")
+    @Transactional
+    public OperationStatus sortChannelCollection(@RequestBody @Valid SortChannelCollectionPostBody postBody, HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        ArrayList<Integer> orders = new ArrayList<>(postBody.getOrderMap().values());
+        orders.sort(Comparator.comparingInt(o -> o));
+        for (int i = 0; i < orders.size(); i++) {
+            if(i == 0){
+                if(orders.get(i) != 0){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return new OperationStatus(-101, "排序必须是从0开始的连续数字");
+                }
+            }else {
+                if (orders.get(i) != orders.get(i - 1) + 1) {
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return new OperationStatus(-101, "排序必须是从0开始的连续数字");
+                }
+            }
+        }
+        List<ChannelCollectionItem> allChannelCollections = channelService.findAllChannelCollections(currentUser.getImessageId());
+        if(allChannelCollections.size() != postBody.getOrderMap().size()){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new OperationStatus(-101, "必须包括所有收藏项目，且只能是自己创建的收藏项目");
+        }
+        for (ChannelCollectionItem channelCollectionItem : allChannelCollections) {
+            boolean have = false;
+            for (Map.Entry<String, Integer> uuidOrderEntry : postBody.getOrderMap().entrySet()) {
+                if(channelCollectionItem.getUuid().equals(uuidOrderEntry.getKey())){
+                    have = true;
+                    break;
+                }
+            }
+            if(!have){
+                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                return new OperationStatus(-101, "必须包括所有收藏项目，且只能是自己创建的收藏项目");
+            }
+        }
+        boolean allOrderIsSame = true;
+        for (ChannelCollectionItem channelCollectionItem : allChannelCollections) {
+            for (Map.Entry<String, Integer> uuidOrderEntry : postBody.getOrderMap().entrySet()) {
+                if(channelCollectionItem.getUuid().equals(uuidOrderEntry.getKey()) && !Objects.equals(channelCollectionItem.getOrder(), uuidOrderEntry.getValue())){
+                    allOrderIsSame = false;
+                    break;
+                }
+            }
+        }
+        if(allOrderIsSame){
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new OperationStatus(-102, "请修改排序");
+        }
+        try {
+            for (Map.Entry<String, Integer> uuidOrderEntry : postBody.getOrderMap().entrySet()) {
+                boolean success = channelService.updateChannelCollectionOrder(uuidOrderEntry.getKey(), currentUser.getImessageId(), uuidOrderEntry.getValue());
+                if(!success){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return new OperationStatus(-103, "更新顺序失败");
+                }
+            }
+        }catch (Exception e){
+            ErrorLogger.log(e);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return new OperationStatus(-103, "更新顺序失败");
+        }
+        List<ChannelCollectionItem> allChannelCollectionsNow = channelService.findAllChannelCollections(currentUser.getImessageId());
+        allChannelCollectionsNow.sort(Comparator.comparingInt(ChannelCollectionItem::getOrder));
+        for (int i = 0; i < allChannelCollectionsNow.size(); i++) {
+            if(i == 0){
+                if(allChannelCollectionsNow.get(i).getOrder() != 0 && allChannelCollectionsNow.get(i).isActive()){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return OperationStatus.failure();
+                }
+            }else {
+                if (allChannelCollectionsNow.get(i).getOrder() != allChannelCollectionsNow.get(i - 1).getOrder() + 1 && allChannelCollectionsNow.get(i).isActive()){
+                    TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+                    return OperationStatus.failure();
+                }
             }
         }
         simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.CHANNEL_COLLECTIONS_UPDATE, "");

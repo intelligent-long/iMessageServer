@@ -244,4 +244,8 @@ public class ChannelService {
     public boolean removeChannelCollection(String uuid, String owner){
         return channelMapper.removeChannelCollection(uuid, owner) == 1;
     }
+
+    public boolean updateChannelCollectionOrder(String channelCollectionUuid, String owner, int order){
+        return channelMapper.updateChannelCollectionOrder(channelCollectionUuid, owner, order) == 1;
+    }
 }
