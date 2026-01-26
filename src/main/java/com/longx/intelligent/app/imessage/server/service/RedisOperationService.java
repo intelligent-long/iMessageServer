@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by LONG on 2024/3/30 at 12:59 AM.
@@ -41,6 +42,7 @@ public class RedisOperationService {
     public final Broadcast BROADCAST = new Broadcast();
     public final GroupChannelAddition GROUP_CHANNEL_ADDITION = new GroupChannelAddition();
     public final GroupChannelNotification GROUP_CHANNEL_NOTIFICATION = new GroupChannelNotification();
+    public final GroupChat GROUP_CHAT = new GroupChat();
 
     public class Auth {
         public void incrementLoginFailureTimes(String imessageId){
@@ -614,6 +616,144 @@ public class RedisOperationService {
                 }
             }
             return true;
+        }
+    }
+
+    public class GroupChat{
+        public void saveGroupChatMessage(GroupChatMessage groupChatMessage, List<String> pendingChannelIds){
+            String groupChatMessageRedisKey = RedisKeys.GroupChat.getGroupChatMessage(groupChatMessage.getTo(), groupChatMessage.getUuid());
+            redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.TYPE, String.valueOf(groupChatMessage.getType()));
+            redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.UUID, groupChatMessage.getUuid());
+            redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.FROM, groupChatMessage.getFrom());
+            redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.TO, groupChatMessage.getTo());
+            redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.TIME, groupChatMessage.getTime());
+            switch (groupChatMessage.getType()) {
+                case GroupChatMessage.TYPE_TEXT -> {
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.TEXT, groupChatMessage.getText());
+                }
+                case GroupChatMessage.TYPE_VOICE -> {
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.VOICE_ID, groupChatMessage.getVoiceId());
+                }
+                case GroupChatMessage.TYPE_IMAGE -> {
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_NAME, groupChatMessage.getFileName());
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.IMAGE_ID, groupChatMessage.getImageId());
+                }
+                case GroupChatMessage.TYPE_VIDEO -> {
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_NAME, groupChatMessage.getFileName());
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.VIDEO_ID, groupChatMessage.getVideoId());
+                }
+                case GroupChatMessage.TYPE_FILE -> {
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_NAME, groupChatMessage.getFileName());
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_ID, groupChatMessage.getFileId());
+                }
+                case GroupChatMessage.TYPE_NOTICE -> {
+
+                }
+                case GroupChatMessage.TYPE_UNSEND -> {
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.UNSEND_MESSAGE_UUID, groupChatMessage.getUnsendMessageUuid());
+                }
+                case GroupChatMessage.TYPE_MESSAGE_EXPIRED -> {
+                    redisOperator.hSet(groupChatMessageRedisKey, RedisKeys.GroupChat.GroupChatMessageHashKey.EXPIRED_MESSAGE_COUNT, groupChatMessage.getExpiredMessageCount());
+                    return;
+                }
+            }
+            redisOperator.expireForHash(groupChatMessageRedisKey, Constants.CHAT_MESSAGE_EXPIRATION_TIME_DAY, TimeUnit.DAYS);
+            String setKey = RedisKeys.GroupChat.getGroupChatMessagePendingChannels(groupChatMessage.getTo(), groupChatMessage.getUuid());
+            redisOperator.sAdd(setKey, pendingChannelIds);
+            redisOperator.expireForSet(setKey, Constants.CHAT_MESSAGE_EXPIRATION_TIME_DAY, TimeUnit.DAYS);
+        }
+
+        public void saveGroupChatMessageImage(GroupChatMessage groupChatMessage, byte[] image){
+            String chatMessageImageKey = RedisKeys.GroupChat.getGroupChatMessageImage(groupChatMessage.getImageId());
+            redisOperator.hSet(chatMessageImageKey, RedisKeys.GroupChat.GroupChatMessageImageHashKey.IMAGE, Base64Util.encodeToString(image));
+            redisOperator.hSet(chatMessageImageKey, RedisKeys.GroupChat.GroupChatMessageImageHashKey.IMAGE_ID, groupChatMessage.getImageId());
+            redisOperator.hSet(chatMessageImageKey, RedisKeys.GroupChat.GroupChatMessageImageHashKey.IMAGE_FILE_NAME, groupChatMessage.getFileName());
+        }
+
+        public void saveGroupChatMessageFile(GroupChatMessage groupChatMessage, byte[] file){
+            String chatMessageFileKey = RedisKeys.GroupChat.getGroupChatMessageFile(groupChatMessage.getFileId());
+            redisOperator.hSet(chatMessageFileKey, RedisKeys.GroupChat.GroupChatMessageFileHashKey.FILE, Base64Util.encodeToString(file));
+            redisOperator.hSet(chatMessageFileKey, RedisKeys.GroupChat.GroupChatMessageFileHashKey.FILE_ID, groupChatMessage.getFileId());
+            redisOperator.hSet(chatMessageFileKey, RedisKeys.GroupChat.GroupChatMessageFileHashKey.FILE_FILE_NAME, groupChatMessage.getFileName());
+        }
+
+        public void saveGroupChatMessageVideo(GroupChatMessage groupChatMessage, byte[] video){
+            String chatMessageVideoKey = RedisKeys.GroupChat.getGroupChatMessageVideo(groupChatMessage.getVideoId());
+            redisOperator.hSet(chatMessageVideoKey, RedisKeys.GroupChat.GroupChatMessageVideoHashKey.VIDEO, Base64Util.encodeToString(video));
+            redisOperator.hSet(chatMessageVideoKey, RedisKeys.GroupChat.GroupChatMessageVideoHashKey.VIDEO_ID, groupChatMessage.getVideoId());
+            redisOperator.hSet(chatMessageVideoKey, RedisKeys.GroupChat.GroupChatMessageVideoHashKey.VIDEO_FILE_NAME, groupChatMessage.getFileName());
+        }
+
+        public void saveGroupChatMessageVoice(GroupChatMessage groupChatMessage, byte[] voice){
+            String chatMessageVoiceKey = RedisKeys.GroupChat.getGroupChatMessageVoice(groupChatMessage.getVoiceId());
+            redisOperator.hSet(chatMessageVoiceKey, RedisKeys.GroupChat.GroupChatMessageVoiceHashKey.VOICE_ID, groupChatMessage.getVoiceId());
+            redisOperator.hSet(chatMessageVoiceKey, RedisKeys.GroupChat.GroupChatMessageVoiceHashKey.VOICE, Base64Util.encodeToString(voice));
+        }
+
+        public void deleteGroupChatMessage(String receiverChannel, String uuid){
+            String messageRedisKey = RedisKeys.GroupChat.getGroupChatMessage(receiverChannel, uuid);
+            doOtherWhenDeleteMessage(messageRedisKey);
+            redisOperator.delete(messageRedisKey);
+        }
+
+        private boolean doOtherWhenDeleteMessage(String key) {
+            Object typeStr = redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TYPE);
+            if(typeStr == null) return false;
+            int type = Integer.parseInt(typeStr.toString());
+            switch (type){
+                case GroupChatMessage.TYPE_IMAGE -> {
+                    String imageId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.IMAGE_ID);
+                    String chatMessageImageKey = RedisKeys.GroupChat.getGroupChatMessageImage(imageId);
+                    redisOperator.delete(chatMessageImageKey);
+                }
+                case GroupChatMessage.TYPE_VIDEO -> {
+                    String videoId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.VIDEO_ID);
+                    String chatMessageVideoKey = RedisKeys.GroupChat.getGroupChatMessageVideo(videoId);
+                    redisOperator.delete(chatMessageVideoKey);
+                }
+                case GroupChatMessage.TYPE_FILE -> {
+                    String fileId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_ID);
+                    String chatMessageFileKey = RedisKeys.GroupChat.getGroupChatMessageFile(fileId);
+                    redisOperator.delete(chatMessageFileKey);
+                }
+                case GroupChatMessage.TYPE_VOICE -> {
+                    String voiceId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.VOICE_ID);
+                    String chatMessageVoiceKey = RedisKeys.GroupChat.getGroupChatMessageVoice(voiceId);
+                    redisOperator.delete(chatMessageVoiceKey);
+                }
+            }
+            return true;
+        }
+
+        public List<GroupChatMessage> getAllGroupChatMessage(String to){
+            List<GroupChatMessage> result = new ArrayList<>();
+            String groupChatMessagePrefix = RedisKeys.GroupChat.getGroupChatMessagePrefix(to);
+            Set<String> keys = redisOperator.keys(groupChatMessagePrefix + "*");
+            keys.forEach(key -> {
+                int type = Integer.parseInt(redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TYPE).toString());
+                String uuid = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.UUID);
+                String from = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.FROM);
+                String toFound = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TO);
+                Date time = new Date((Long) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TIME));
+                String text = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TEXT);
+                String extension = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_NAME);
+                String imageId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.IMAGE_ID);
+                String fileId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_ID);
+                String videoId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.VIDEO_ID);
+                String voiceId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.VOICE_ID);
+                String unsendMessageUuid = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.UNSEND_MESSAGE_UUID);
+                Integer expiredMessageCount = (Integer) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.EXPIRED_MESSAGE_COUNT);
+                result.add(new GroupChatMessage(type, uuid, from, toFound, time, text, extension, imageId, fileId, videoId, voiceId, unsendMessageUuid, expiredMessageCount));
+            });
+            return result;
+        }
+
+        public Set<String> getAllPendingChannelIds( GroupChatMessage groupChatMessage){
+            String setKey = RedisKeys.GroupChat.getGroupChatMessagePendingChannels(groupChatMessage.getTo(), groupChatMessage.getUuid());
+            return redisOperator.sMembers(setKey).stream()
+                    .filter(o -> o instanceof String)
+                    .map(o -> (String) o)
+                    .collect(Collectors.toSet());
         }
     }
 

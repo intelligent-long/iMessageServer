@@ -380,4 +380,15 @@
     <update id="updateGroupChannelCollectionOrder">
         UPDATE group_channel_collection SET `order` = #{order} WHERE uuid = #{uuid} AND owner = #{owner} AND is_active = true;
     </update>
+
+    <select id="isInGroup" resultType="boolean">
+        SELECT EXISTS(
+            SELECT 1
+            FROM group_channel_association
+            WHERE group_channel_id = #{groupId}
+              AND requester = #{channelId}
+              AND is_active = true
+        )
+    </select>
+
 </mapper>

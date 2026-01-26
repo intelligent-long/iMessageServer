@@ -1,5 +1,6 @@
 package com.longx.intelligent.app.imessage.server.ui;
 
+import com.longx.intelligent.app.imessage.server.context.SpringContextHolder;
 import com.longx.intelligent.app.imessage.server.util.EnvironmentUtil;
 import com.longx.intelligent.app.imessage.server.value.Constants;
 
@@ -90,7 +91,14 @@ public class LogUi {
             });
             MenuItem menuItemOpenExit = new MenuItem("退出");
             menuItemOpenExit.addActionListener(e -> {
-                new Thread(() -> System.exit(0)).start();
+                ShutdownDialog shutdownDialog = new ShutdownDialog(frame);
+                // UI 线程安全
+                new Thread(shutdownDialog::showDialog).start();
+                new Thread(() -> {
+                    int code = SpringContextHolder.gracefulShutdownAndWait();
+                    shutdownDialog.closeDialog();
+                    System.exit(code);
+                }, "spring-shutdown-thread").start();
             });
             popupMenu.insert(Constants.APP_NAME, 0);
             popupMenu.getItem(0).setEnabled(false);
@@ -116,7 +124,17 @@ public class LogUi {
             systemTray.setStatus(Constants.APP_NAME);
             systemTray.setTooltip(Constants.APP_NAME);
             systemTray.getMenu().add(new dorkbox.systemTray.MenuItem("打开窗口", e -> frame.setVisible(true)));
-            systemTray.getMenu().add(new dorkbox.systemTray.MenuItem("退出", e -> System.exit(0)));
+            systemTray.getMenu().add(
+                    new dorkbox.systemTray.MenuItem("退出", e -> {
+                        ShutdownDialog shutdownDialog = new ShutdownDialog(frame);
+                        new Thread(shutdownDialog::showDialog).start();
+                        new Thread(() -> {
+                            int code = SpringContextHolder.gracefulShutdownAndWait();
+                            shutdownDialog.closeDialog();
+                            System.exit(code);
+                        }, "spring-shutdown-thread").start();
+                    })
+            );
             return true;
         } catch (Throwable t) {
             t.printStackTrace();

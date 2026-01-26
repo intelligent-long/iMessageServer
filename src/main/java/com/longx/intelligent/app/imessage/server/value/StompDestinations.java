@@ -14,6 +14,7 @@ public class StompDestinations {
     public static final String CHANNEL_ADDITIONS_NOT_VIEW_COUNT_UPDATE = PREFIX_QUEUE + "/channel_additions_not_view_count_update";
     public static final String CHANNELS_UPDATE = PREFIX_QUEUE + "/channels_update";
     public static final String CHAT_MESSAGES_UPDATE = PREFIX_QUEUE + "/chat_messages_update";
+    public static final String GROUP_CHAT_MESSAGES_UPDATE = PREFIX_QUEUE + "/group_chat_messages_update";
     public static final String CHANNEL_TAGS_UPDATE = PREFIX_QUEUE + "/channel_tags_update";
     public static final String BROADCASTS_NEWS_UPDATE = PREFIX_QUEUE + "/broadcasts_news_update";
     public static final String RECENT_BROADCAST_MEDIAS_UPDATE = PREFIX_QUEUE + "/recent_broadcast_medias_update";

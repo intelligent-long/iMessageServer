@@ -96,4 +96,6 @@ public interface GroupChannelMapper {
     int removeGroupChannelCollection(String uuid, String owner);
 
     int updateGroupChannelCollectionOrder(String uuid, String owner, int order);
+
+    boolean isInGroup(String groupId, String channelId);
 }

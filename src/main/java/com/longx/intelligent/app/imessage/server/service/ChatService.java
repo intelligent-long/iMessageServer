@@ -5,7 +5,9 @@ import com.longx.intelligent.app.imessage.server.data.MessageViewed;
 import com.longx.intelligent.app.imessage.server.mapper.ChatMapper;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,6 +23,9 @@ public class ChatService {
     private SimpMessagingTemplate simpMessagingTemplate;
     @Autowired
     private ChatMapper chatMapper;
+    @Autowired
+    @Lazy
+    private ChatService self;
 
     public void sendChatMessageStep1(ChatMessage chatMessage, byte[] bytes){
         redisOperationService.CHAT.saveChatMessage(chatMessage);
@@ -42,7 +47,11 @@ public class ChatService {
 
     public void sendChatMessageStep2(ChatMessage chatMessage, byte[] bytes){
         simpMessagingTemplate.convertAndSendToUser(chatMessage.getTo(), StompDestinations.CHAT_MESSAGES_UPDATE, "");
+        self.saveChatMessageToSql(chatMessage, bytes);
+    }
 
+    @Async("asyncExecutor")
+    protected void saveChatMessageToSql(ChatMessage chatMessage, byte[] bytes) {
         switch (chatMessage.getType()){
             case ChatMessage.TYPE_TEXT -> chatMapper.insertTextChatMessage(chatMessage);
             case ChatMessage.TYPE_VOICE -> chatMapper.insertVoiceChatMessage(chatMessage, bytes);

@@ -326,4 +326,8 @@ public class GroupChannelService {
     public boolean updateGroupChannelCollectionOrder(String groupChannelCollectionUuid, String owner, int order){
         return groupChannelMapper.updateGroupChannelCollectionOrder(groupChannelCollectionUuid, owner, order) == 1;
     }
+
+    public boolean isInGroup(String groupId, String channelId){
+        return groupChannelMapper.isInGroup(groupId, channelId);
+    }
 }

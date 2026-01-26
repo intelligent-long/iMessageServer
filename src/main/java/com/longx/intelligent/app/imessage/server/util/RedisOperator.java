@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 @Component
 public class RedisOperator {
-
     private final RedisTemplate<String, Object> redisTemplate;
     private final HashOperations<String, String, Object> hashOperations;
     private final SetOperations<String, Object> setOperations;
@@ -77,6 +76,10 @@ public class RedisOperator {
 
     public Set<Object> sMembers(String key) {
         return setOperations.members(key);
+    }
+
+    public void sRemove(String key, Object... values) {
+        setOperations.remove(key, values);
     }
 
     public void increment(String key){

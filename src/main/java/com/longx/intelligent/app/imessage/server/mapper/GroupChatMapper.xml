@@ -1,0 +1,45 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.longx.intelligent.app.imessage.server.mapper.GroupChatMapper">
+
+    <insert id="insertTextGroupChatMessage">
+        INSERT INTO group_chat_message(uuid, type, `from`, `to`, time, text)
+        VALUES (#{uuid}, #{type}, #{from}, #{to}, #{time}, #{text})
+    </insert>
+
+    <insert id="insertImageGroupChatMessage">
+        INSERT INTO group_chat_message(uuid, type, `from`, `to`, time, file_name, image)
+        VALUES (#{groupChatMessage.uuid}, #{groupChatMessage.type}, #{groupChatMessage.from}, #{groupChatMessage.to}, #{groupChatMessage.time}, #{groupChatMessage.fileName}, #{image})
+    </insert>
+
+    <insert id="insertFileGroupChatMessage">
+        INSERT INTO  group_chat_message(uuid, type, `from`, `to`, time, file_name, file)
+        VALUES (#{groupChatMessage.uuid}, #{groupChatMessage.type}, #{groupChatMessage.from}, #{groupChatMessage.to}, #{groupChatMessage.time}, #{groupChatMessage.fileName}, #{file})
+    </insert>
+
+    <insert id="insertVideoGroupChatMessage">
+        INSERT INTO group_chat_message(uuid, type, `from`, `to`, time, file_name, video)
+        VALUES (#{groupChatMessage.uuid}, #{groupChatMessage.type}, #{groupChatMessage.from}, #{groupChatMessage.to}, #{groupChatMessage.time}, #{groupChatMessage.fileName}, #{video})
+    </insert>
+
+    <insert id="insertVoiceGroupChatMessage">
+        INSERT INTO group_chat_message(uuid, type, `from`, `to`, time, voice)
+        VALUES (#{groupChatMessage.uuid}, #{groupChatMessage.type}, #{groupChatMessage.from}, #{groupChatMessage.to}, #{groupChatMessage.time}, #{voice})
+    </insert>
+
+    <insert id="insertUnsendGroupChatMessage">
+        INSERT INTO group_chat_message(uuid, type, `from`, `to`, time, unsend_message_uuid)
+        VALUES (#{uuid}, #{type}, #{from}, #{to}, #{time}, #{unsendMessageUuid})
+    </insert>
+
+    <insert id="insertExpiredMessageGroupChatMessage">
+        INSERT INTO group_chat_message(uuid, type, `from`, `to`, time, expired_message_count)
+        VALUES (#{uuid}, #{type}, #{from}, #{to}, #{time}, #{expiredMessageCount})
+    </insert>
+
+    <select id="findGroupChatMessage" resultType="com.longx.intelligent.app.imessage.server.data.GroupChatMessage">
+        SELECT uuid, type, `from`, `to`, time, text, file_name fileName, unsend_message_uuid unsendMessageUuid, expired_message_count expiredMessageCount
+        FROM group_chat_message
+        WHERE `to` = #{receiverChannel} AND uuid = #{uuid}
+    </select>
+
+</mapper>

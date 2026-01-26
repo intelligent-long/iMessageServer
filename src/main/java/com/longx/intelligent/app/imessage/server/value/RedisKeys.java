@@ -299,6 +299,83 @@ public class RedisKeys {
         }
     }
 
+    public static class GroupChat{
+        private static final String BASE_PATH = "group_chat_message";
+
+        private static final String GROUP_CHAT_MESSAGE = BASE_PATH + ":{TO}" + ":{UUID}";
+        public static String getGroupChatMessage(String to, String uuid){
+            return GROUP_CHAT_MESSAGE.replace("{TO}", to).replace("{UUID}", uuid);
+        }
+        public static String getGroupChatMessagePendingChannels(String to, String uuid){
+            return GROUP_CHAT_MESSAGE.replace("{TO}", to).replace("{UUID}", uuid) + ":pending:channels";
+        }
+
+        public static class GroupChatMessageHashKey {
+            public static final String TYPE = "type";
+            public static final String UUID = "uuid";
+            public static final String FROM = "from";
+            public static final String TO = "to";
+            public static final String TIME = "time";
+            public static final String TEXT = "text";
+            public static final String FILE_NAME = "file_name";
+            public static final String IMAGE_ID = "image_id";
+            public static final String FILE_ID = "file_id";
+            public static final String VIDEO_ID = "video_id";
+            public static final String VOICE_ID = "voice_id";
+            public static final String UNSEND_MESSAGE_UUID = "unsend_message_uuid";
+            public static final String EXPIRED_MESSAGE_COUNT = "expired_message_count";
+        }
+
+        private static final String GROUP_CHAT_MESSAGE_PREFIX = BASE_PATH + ":{TO}:";
+
+        public static String getGroupChatMessagePrefix(String receiverChannel) {
+            return GROUP_CHAT_MESSAGE_PREFIX.replace("{TO}", receiverChannel);
+        }
+
+        public static class GroupChatMessageImageHashKey {
+            public static final String IMAGE_ID = "image_id";
+            public static final String IMAGE_FILE_NAME = "image_file_name";
+            public static final String IMAGE = "image";
+        }
+
+        private static final String GROUP_CHAT_MESSAGE_IMAGE = BASE_PATH + ":image:{IMAGE_ID}";
+        public static String getGroupChatMessageImage(String imageId){
+            return GROUP_CHAT_MESSAGE_IMAGE.replace("{IMAGE_ID}", imageId);
+        }
+
+        public static class GroupChatMessageFileHashKey {
+            public static final String FILE_ID = "file_id";
+            public static final String FILE_FILE_NAME = "file_file_name";
+            public static final String FILE = "file";
+        }
+
+        private static final String GROUP_CHAT_MESSAGE_FILE = BASE_PATH + ":file:{FILE_ID}";
+        public static String getGroupChatMessageFile(String fileId){
+            return GROUP_CHAT_MESSAGE_FILE.replace("{FILE_ID}", fileId);
+        }
+
+        public static class GroupChatMessageVideoHashKey {
+            public static final String VIDEO_ID = "video_id";
+            public static final String VIDEO_FILE_NAME = "video_file_name";
+            public static final String VIDEO = "video";
+        }
+
+        private static final String GROUP_CHAT_MESSAGE_VIDEO = BASE_PATH + ":video:{VIDEO_ID}";
+        public static String getGroupChatMessageVideo(String videoId){
+            return GROUP_CHAT_MESSAGE_VIDEO.replace("{VIDEO_ID}", videoId);
+        }
+
+        public static class GroupChatMessageVoiceHashKey {
+            public static final String VOICE_ID = "voice_id";
+            public static final String VOICE = "voice";
+        }
+
+        private static final String GROUP_CHAT_MESSAGE_VOICE = BASE_PATH + ":voice:{VOICE_ID}";
+        public static String getGroupChatMessageVoice(String voiceId){
+            return GROUP_CHAT_MESSAGE_VOICE.replace("{VOICE_ID}", voiceId);
+        }
+    }
+
     public static class Broadcast{
         private static final String BASE_PATH = "broadcast";
 

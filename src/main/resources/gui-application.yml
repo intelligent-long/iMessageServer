@@ -14,7 +14,10 @@ spring:
       request-timeout: 60000
   mail:
     protocol: smtp
+  lifecycle:
+    timeout-per-shutdown-phase: 120s
 server:
+  shutdown: graceful
   servlet:
     session:
       cookie:
