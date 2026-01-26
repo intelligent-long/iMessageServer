@@ -589,26 +589,23 @@ public class RedisOperationService {
             return new MessageViewed(notViewedCount, viewedUuid, other);
         }
 
-        public MessageViewed viewAllMessage(String currentUserImessageId){
+        public void viewAllMessage(String currentUserImessageId, String other){
             String messagePrefix = RedisKeys.Chat.getChatMessagePrefix(currentUserImessageId);
             Set<String> keys = redisOperator.keys(messagePrefix + "*");
-            String viewedUuid = null;
-            String other = null;
             for (String key : keys) {
-                viewedUuid = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.UUID);
-                doOtherWhenDeleteMessage(key);
+                String thisOther = null;
                 String from = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.FROM);
                 String to = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.TO);
-                if (currentUserImessageId.equals(from)) {
-                    other = to;
-                } else if (currentUserImessageId.equals(to)) {
-                    other = from;
+                if(currentUserImessageId.equals(from)){
+                    thisOther = to;
+                }else if(currentUserImessageId.equals(to)){
+                    thisOther = from;
                 }
-                redisOperator.delete(key);
-                break;
+                if(thisOther.equals(other)) {
+                        doOtherWhenDeleteMessage(key);
+                        redisOperator.delete(key);
+                }
             }
-            int notViewedCount = redisOperator.keys(messagePrefix + "*").size();
-            return new MessageViewed(notViewedCount, viewedUuid, other);
         }
 
         private boolean doOtherWhenDeleteMessage(String key) {

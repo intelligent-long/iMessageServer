@@ -94,8 +94,8 @@ public class ChatService {
         return redisOperationService.CHAT.viewMessage(currentUserImessageId, messageUuid);
     }
 
-    public MessageViewed viewAllMessage(String currentUserImessageId){
-        return redisOperationService.CHAT.viewAllMessage(currentUserImessageId);
+    public void viewAllMessage(String currentUserImessageId, String other){
+        redisOperationService.CHAT.viewAllMessage(currentUserImessageId, other);
     }
 
     public ChatMessage getChatMessage(String receiver, String uuid){
