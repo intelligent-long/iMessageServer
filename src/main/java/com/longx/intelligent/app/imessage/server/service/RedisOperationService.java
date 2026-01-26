@@ -589,6 +589,28 @@ public class RedisOperationService {
             return new MessageViewed(notViewedCount, viewedUuid, other);
         }
 
+        public MessageViewed viewAllMessage(String currentUserImessageId){
+            String messagePrefix = RedisKeys.Chat.getChatMessagePrefix(currentUserImessageId);
+            Set<String> keys = redisOperator.keys(messagePrefix + "*");
+            String viewedUuid = null;
+            String other = null;
+            for (String key : keys) {
+                viewedUuid = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.UUID);
+                doOtherWhenDeleteMessage(key);
+                String from = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.FROM);
+                String to = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.TO);
+                if (currentUserImessageId.equals(from)) {
+                    other = to;
+                } else if (currentUserImessageId.equals(to)) {
+                    other = from;
+                }
+                redisOperator.delete(key);
+                break;
+            }
+            int notViewedCount = redisOperator.keys(messagePrefix + "*").size();
+            return new MessageViewed(notViewedCount, viewedUuid, other);
+        }
+
         private boolean doOtherWhenDeleteMessage(String key) {
             Object typeStr = redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.TYPE);
             if(typeStr == null) return false;

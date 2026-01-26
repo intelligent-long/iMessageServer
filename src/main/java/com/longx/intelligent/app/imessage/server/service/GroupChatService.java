@@ -58,7 +58,7 @@ public class GroupChatService {
             simpMessagingTemplate.convertAndSendToUser(groupChannelAssociation.getRequester().getImessageId(), StompDestinations.GROUP_CHAT_MESSAGES_UPDATE, "");
         });
 
-        saveGroupChatMessageToSql(groupChatMessage, bytes);
+        self.saveGroupChatMessageToSql(groupChatMessage, bytes);
     }
 
 

@@ -4,10 +4,7 @@ import com.longx.intelligent.app.imessage.server.data.*;
 import com.longx.intelligent.app.imessage.server.data.request.*;
 import com.longx.intelligent.app.imessage.server.data.response.OperationData;
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
-import com.longx.intelligent.app.imessage.server.service.ChannelService;
-import com.longx.intelligent.app.imessage.server.service.PermissionService;
-import com.longx.intelligent.app.imessage.server.service.SessionService;
-import com.longx.intelligent.app.imessage.server.service.UserService;
+import com.longx.intelligent.app.imessage.server.service.*;
 import com.longx.intelligent.app.imessage.server.util.ErrorLogger;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import jakarta.servlet.http.HttpSession;
@@ -36,6 +33,8 @@ public class ChannelController {
     private SimpMessagingTemplate simpMessagingTemplate;
     @Autowired
     private PermissionService permissionService;
+    @Autowired
+    private ChatService chatService;
 
     @GetMapping("find/imessage_id/{imessageId}")
     public OperationData findChannelByImessageId(@PathVariable String imessageId, HttpSession session){
@@ -206,6 +205,9 @@ public class ChannelController {
         permissionService.deleteBroadcastChannelPermissionExcludeConnectedChannel(currentUser.getImessageId(), channelImessageId);
         permissionService.deleteExcludeBroadcastChannel(currentUser.getImessageId(), channelImessageId);
         permissionService.deleteAllBroadcastPermissionExcludeConnectedChannels(currentUser.getImessageId(), channelImessageId);
+
+        chatService.viewAllMessage(channelImessageId);
+        chatService.viewAllMessage(currentUser.getImessageId());
 
         simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.CHANNELS_UPDATE, "");
         simpMessagingTemplate.convertAndSendToUser(channelImessageId, StompDestinations.CHANNELS_UPDATE, "");
