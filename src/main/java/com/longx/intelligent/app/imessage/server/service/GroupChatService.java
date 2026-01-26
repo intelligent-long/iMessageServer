@@ -4,7 +4,9 @@ import com.longx.intelligent.app.imessage.server.data.GroupChatMessage;
 import com.longx.intelligent.app.imessage.server.mapper.GroupChatMapper;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -23,6 +25,9 @@ public class GroupChatService {
     private SimpMessagingTemplate simpMessagingTemplate;
     @Autowired
     private GroupChatMapper groupChatMapper;
+    @Autowired
+    @Lazy
+    private GroupChatService self;
 
     public void sendGroupChatMessageStep1(GroupChatMessage groupChatMessage, byte[] bytes){
         String toGroupId = groupChatMessage.getTo();
@@ -49,12 +54,16 @@ public class GroupChatService {
     }
 
     public void sendGroupChatMessageStep2(GroupChatMessage groupChatMessage, byte[] bytes){
-        String toGroupId = groupChatMessage.getTo();
-        String fromUserId = groupChatMessage.getFrom();
-        groupChannelService.findGroupChannelById(toGroupId, fromUserId).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
+        groupChannelService.findGroupChannelById(groupChatMessage.getTo(), groupChatMessage.getFrom()).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
             simpMessagingTemplate.convertAndSendToUser(groupChannelAssociation.getRequester().getImessageId(), StompDestinations.GROUP_CHAT_MESSAGES_UPDATE, "");
         });
 
+        saveGroupChatMessageToSql(groupChatMessage, bytes);
+    }
+
+
+    @Async("asyncExecutor")
+    protected void saveGroupChatMessageToSql(GroupChatMessage groupChatMessage, byte[] bytes) {
         switch (groupChatMessage.getType()){
             case GroupChatMessage.TYPE_TEXT -> groupChatMapper.insertTextGroupChatMessage(groupChatMessage);
             case GroupChatMessage.TYPE_VOICE -> groupChatMapper.insertVoiceGroupChatMessage(groupChatMessage, bytes);
