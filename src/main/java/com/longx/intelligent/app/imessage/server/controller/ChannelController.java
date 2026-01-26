@@ -206,12 +206,6 @@ public class ChannelController {
         permissionService.deleteExcludeBroadcastChannel(currentUser.getImessageId(), channelImessageId);
         permissionService.deleteAllBroadcastPermissionExcludeConnectedChannels(currentUser.getImessageId(), channelImessageId);
 
-        //删除频道时移除未读消息
-        chatService.viewAllMessage(channelImessageId, currentUser.getImessageId());
-        chatService.viewAllMessage(currentUser.getImessageId(), channelImessageId);
-
-        //TODO 删除频道时移除群消息
-
         simpMessagingTemplate.convertAndSendToUser(currentUser.getImessageId(), StompDestinations.CHANNELS_UPDATE, "");
         simpMessagingTemplate.convertAndSendToUser(channelImessageId, StompDestinations.CHANNELS_UPDATE, "");
         return OperationStatus.success();
