@@ -94,7 +94,6 @@ public class ChatService {
         return redisOperationService.CHAT.viewMessage(currentUserImessageId, messageUuid);
     }
 
-    @Async("asyncExecutor")
     public MessageViewed viewAllMessage(String currentUserImessageId){
         return redisOperationService.CHAT.viewAllMessage(currentUserImessageId);
     }
