@@ -309,6 +309,9 @@ public class RedisKeys {
         public static String getGroupChatMessagePendingChannels(String to, String uuid){
             return GROUP_CHAT_MESSAGE.replace("{TO}", to).replace("{UUID}", uuid) + ":pending:channels";
         }
+        public static String getGroupChatMessagePendingChannelsPattern(String to){
+            return GROUP_CHAT_MESSAGE.replace("{TO}", to).replace("{UUID}", "*") + ":pending:channels";
+        }
 
         public static class GroupChatMessageHashKey {
             public static final String TYPE = "type";

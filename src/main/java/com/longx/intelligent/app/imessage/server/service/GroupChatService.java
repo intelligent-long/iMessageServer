@@ -94,4 +94,10 @@ public class GroupChatService {
         });
         return allGroupChatMessage;
     }
+
+    public void removeCurrentPendingChannelId(String currentUserId){
+        groupChannelService.findAllAssociatedGroupChannels(currentUserId).forEach(groupChannel -> {
+            redisOperationService.GROUP_CHAT.removePendingChannelIds(groupChannel.getGroupChannelId(), currentUserId);
+        });
+    }
 }

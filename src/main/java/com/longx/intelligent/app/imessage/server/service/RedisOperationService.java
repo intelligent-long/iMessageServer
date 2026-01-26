@@ -682,6 +682,13 @@ public class RedisOperationService {
             redisOperator.expireForSet(setKey, Constants.CHAT_MESSAGE_EXPIRATION_TIME_DAY, TimeUnit.DAYS);
         }
 
+        public void removePendingChannelIds(String to, Object... pendingChannelIds){
+            String groupChatMessagePattern = RedisKeys.GroupChat.getGroupChatMessagePendingChannelsPattern(to);
+            redisOperator.keys(groupChatMessagePattern).forEach(key -> {
+                redisOperator.sRemove(key, pendingChannelIds);
+            });
+        }
+
         public void saveGroupChatMessageImage(GroupChatMessage groupChatMessage, byte[] image){
             String chatMessageImageKey = RedisKeys.GroupChat.getGroupChatMessageImage(groupChatMessage.getImageId());
             redisOperator.hSet(chatMessageImageKey, RedisKeys.GroupChat.GroupChatMessageImageHashKey.IMAGE, Base64Util.encodeToString(image));

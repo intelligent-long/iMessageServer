@@ -55,6 +55,8 @@ public class GroupChannelController {
     private UserService userService;
     @Autowired
     private RedisOperationService redisOperationService;
+    @Autowired
+    private GroupChatService groupChatService;
 
     @GetMapping("find/group_channel_id/{groupChannelId}")
     public OperationData findGroupChannelById(@PathVariable String groupChannelId, @RequestParam(defaultValue = "idUser") String queryType, @RequestParam(defaultValue = "false") boolean includeInactive, HttpSession session){
@@ -759,6 +761,9 @@ public class GroupChannelController {
                 simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNEL_NOTIFICATIONS_NOT_VIEW_COUNT_UPDATE, "");
                 simpMessagingTemplate.convertAndSendToUser(associatedImessageId, StompDestinations.GROUP_CHANNELS_UPDATE, "");
             });
+
+            //删除群时移除群消息pendingChannelId
+            groupChatService.removeCurrentPendingChannelId(currentUser.getImessageId());
             return OperationStatus.success();
         }
     }
