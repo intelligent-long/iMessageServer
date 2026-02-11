@@ -132,9 +132,9 @@ public class UserController {
             Date timeCanChange = TimeUtil.addDays(imessageIdUserLastChangeTime, Constants.CHANGE_IMESSAGE_ID_INTERVAL_DAYS);
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy 年 M 月 d 日");
             String formattedCanChangeTime = simpleDateFormat.format(timeCanChange);
-            return new OperationData(102, "iMessage ID " + Constants.CHANGE_IMESSAGE_ID_INTERVAL_DAYS + " 天内只能修改一次，" + formattedCanChangeTime + "后可修改。", timeCanChange);
+            return new OperationData(102, "Apollo ID " + Constants.CHANGE_IMESSAGE_ID_INTERVAL_DAYS + " 天内只能修改一次，" + formattedCanChangeTime + "后可修改。", timeCanChange);
         }else {
-            return new OperationData(101, "iMessage ID " + Constants.CHANGE_IMESSAGE_ID_INTERVAL_DAYS + " 天内只能修改一次，当前可以修改。", null);
+            return new OperationData(101, "Apollo ID " + Constants.CHANGE_IMESSAGE_ID_INTERVAL_DAYS + " 天内只能修改一次，当前可以修改。", null);
         }
     }
 
@@ -144,16 +144,16 @@ public class UserController {
         User user = sessionService.getUserOfSession(session);
         Date imessageIdUserLastChangeTime = userService.findImessageIdUserLastChangeTime(user.getImessageId());
         if(imessageIdUserLastChangeTime != null && !TimeUtil.isDateAfter(imessageIdUserLastChangeTime, new Date(), Constants.CHANGE_IMESSAGE_ID_INTERVAL_DAYS * 24 * 60 * 60 * 1000L)){
-            return new OperationStatus(-101, "当前时间不可修改 iMessage ID");
+            return new OperationStatus(-101, "当前时间不可修改 Apollo ID");
         }
         if(!userService.isImessageIdUserValid(postBody.getImessageIdUser())){
-            return new OperationStatus(-102, "iMessage ID 不合法");
+            return new OperationStatus(-102, "Apollo ID 不合法");
         }
         if(userService.findUserByImessageIdUser(postBody.getImessageIdUser()) != null){
-            return new OperationStatus(-103, "iMessage ID 已存在");
+            return new OperationStatus(-103, "Apollo ID 已存在");
         }
         if(postBody.getImessageIdUser().equals(user.getImessageIdUser())){
-            return new OperationStatus(-104, "请修改 iMessage ID");
+            return new OperationStatus(-104, "请修改 Apollo ID");
         }
         if(userService.updateImessageIdUserLastChangeTime(new Date(), user.getImessageId())) {
             if (userService.updateImessageIdUser(postBody.getImessageIdUser(), user.getImessageId())) {

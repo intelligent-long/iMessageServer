@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.longx.intelligent.app.imessage</groupId>
-    <artifactId>imessage-server</artifactId>
+    <artifactId>apollo-server</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <name>iMessage Server</name>
-    <description>iMessage Server</description>
+    <name>Apollo Server</name>
+    <description>Apollo Server</description>
     <properties>
         <java.version>23</java.version>
     </properties>

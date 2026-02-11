@@ -87,7 +87,7 @@ public class AuthController {
     public OperationData imessageIdUserLogin(@Valid @RequestBody ImessageIdUserLoginPostBody postBody, HttpSession session, HttpServletRequest request){
         User user = userService.findUserByImessageIdUser(postBody.getImessageIdUser());
         if(user == null){
-            return new OperationData(-101, "请检查 iMessage ID 和密码");
+            return new OperationData(-101, "请检查 Apollo ID 和密码");
         }
 
         boolean loginAttemptsLimitExceeded = authService.isLoginAttemptsLimitExceeded(user.getImessageId());
@@ -98,7 +98,7 @@ public class AuthController {
         boolean passed = authService.passLogin(user, postBody.getPassword());
         if(!passed){
             authService.incrementLoginFailureTimes(user.getImessageId());
-            return new OperationData(-101, "请检查 iMessage ID 和密码");
+            return new OperationData(-101, "请检查 Apollo ID 和密码");
         }else {
             authService.login(session, user,
                     new OfflineDetail(OfflineDetail.REASON_NEW_LOGIN_IMESSAGE_ID_PASSWORD, new Date(), NetworkUtil.getIp(request)));
