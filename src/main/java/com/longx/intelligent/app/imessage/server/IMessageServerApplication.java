@@ -5,7 +5,6 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.longx.intelligent.app.imessage.server.context.SpringContextHolder;
 import com.longx.intelligent.app.imessage.server.ui.LaunchUi;
 import com.longx.intelligent.app.imessage.server.ui.LogUi;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;

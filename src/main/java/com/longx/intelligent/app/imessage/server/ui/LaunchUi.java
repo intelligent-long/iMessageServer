@@ -111,7 +111,7 @@ public class LaunchUi {
         try {
             Map<String, String> properties = getProperties();
             File configFile = new File(EnvironmentUtil.getApplicationDirectory(), Constants.CONFIG_JSON_FILE_NAME);
-            JsonUtil.writeObjectToJsonFile(properties, configFile);
+            JsonUtil.writeObjectToJsonFile(properties, configFile, true);
         }catch (Exception e){
             e.printStackTrace();
         }

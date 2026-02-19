@@ -86,17 +86,27 @@ public class JsonUtil {
         }
     }
 
-    public static void writeObjectToJsonFile(Object object, File file) {
+    public static void writeObjectToJsonFile(Object object, File file, boolean format) {
         try {
-            if(!file.exists()){
-                file.getParentFile().mkdirs();
+            if (!file.exists()) {
+                File parent = file.getParentFile();
+                if (parent != null && !parent.exists()) {
+                    parent.mkdirs();
+                }
                 file.createNewFile();
             }
-            MAPPER.writeValue(file, object);
+
+            if (format) {
+                MAPPER.writerWithDefaultPrettyPrinter().writeValue(file, object);
+            } else {
+                MAPPER.writeValue(file, object);
+            }
+
         } catch (IOException e) {
             throw new JsonException("写入对象到 Json 文件出错", e);
         }
     }
+
 
     public static <T> T loadObjectFromJsonFile(File file, Class<T> clazz) {
         try {
