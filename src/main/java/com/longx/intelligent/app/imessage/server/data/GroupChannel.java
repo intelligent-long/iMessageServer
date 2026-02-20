@@ -1,5 +1,7 @@
 package com.longx.intelligent.app.imessage.server.data;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Date;
 import java.util.List;
 
@@ -20,6 +22,7 @@ public class GroupChannel {
     private Region thirdRegion;
     private String avatarHash;
     private Boolean groupJoinVerificationEnabled;
+    @JsonProperty("terminated")
     private boolean isTerminated;
 
     public GroupChannel() {

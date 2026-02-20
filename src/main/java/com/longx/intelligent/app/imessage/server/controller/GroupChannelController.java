@@ -76,6 +76,7 @@ public class GroupChannelController {
             }
         }
         if(groupChannel == null) return new OperationData(-101, "无内容");
+        System.err.println(groupChannel);
         return OperationData.success(groupChannel);
     }
 
@@ -715,7 +716,8 @@ public class GroupChannelController {
             return new OperationStatus(-101, "频道未建立关联");
         }
         for (GroupChannelAssociation groupChannelAssociation : postBody.getGroupChannelInvitedTo().getGroupChannelAssociations()) {
-            if(groupChannelAssociation.getRequester().equals(postBody.getInvitee().getImessageId())){
+            if(Objects.equals(groupChannelAssociation.getRequester() == null ? null : groupChannelAssociation.getRequester().getImessageId(),
+                    postBody.getInvitee().getImessageId())){
                 return new OperationStatus(-102, "群频道已经建立关联");
             }
         }
@@ -763,7 +765,7 @@ public class GroupChannelController {
             });
 
             //删除群时移除群消息pendingChannelId
-            groupChatService.removeCurrentPendingChannelId(currentUser.getImessageId());
+            groupChatService.viewAllMessage(groupChannelId, currentUser.getImessageId());
             return OperationStatus.success();
         }
     }

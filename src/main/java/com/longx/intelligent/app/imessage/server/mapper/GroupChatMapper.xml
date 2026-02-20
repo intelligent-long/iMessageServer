@@ -37,9 +37,9 @@
     </insert>
 
     <select id="findGroupChatMessage" resultType="com.longx.intelligent.app.imessage.server.data.GroupChatMessage">
-        SELECT uuid, type, `from`, `to`, time, text, file_name fileName, unsend_message_uuid unsendMessageUuid, expired_message_count expiredMessageCount
+        SELECT uuid, type, `from`, `to`, `time`, text, file_name fileName, unsend_message_uuid unsendMessageUuid, expired_message_count expiredMessageCount
         FROM group_chat_message
-        WHERE `to` = #{receiverChannel} AND uuid = #{uuid}
+        WHERE uuid = #{messageUuid}
     </select>
 
 </mapper>

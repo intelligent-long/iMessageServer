@@ -1,10 +1,12 @@
 package com.longx.intelligent.app.imessage.server.controller;
 
 import com.longx.intelligent.app.imessage.server.data.GroupChatMessage;
+import com.longx.intelligent.app.imessage.server.data.GroupMessageViewed;
 import com.longx.intelligent.app.imessage.server.data.User;
 import com.longx.intelligent.app.imessage.server.data.request.SendTextGroupChatMessagePostBody;
 import com.longx.intelligent.app.imessage.server.data.response.OperationData;
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
+import com.longx.intelligent.app.imessage.server.exception.BadRequestException;
 import com.longx.intelligent.app.imessage.server.service.GroupChannelService;
 import com.longx.intelligent.app.imessage.server.service.GroupChatService;
 import com.longx.intelligent.app.imessage.server.service.SessionService;
@@ -39,6 +41,14 @@ public class GroupChatController {
         User currentUser = sessionService.getUserOfSession(session);
         List<GroupChatMessage> allUnviewedGroupChatMessages = groupChatService.getAllUnviewedGroupChatMessages(currentUser.getImessageId());
         return OperationData.success(allUnviewedGroupChatMessages);
+    }
+
+    @PostMapping("message/view/{messageUuid}")
+    public OperationData viewMessage(@PathVariable String messageUuid, HttpSession session){
+        User currentUser = sessionService.getUserOfSession(session);
+        GroupMessageViewed groupMessageViewed = groupChatService.viewMessage(messageUuid, currentUser.getImessageId());
+        if(groupMessageViewed.viewedUuid() == null || groupMessageViewed.groupId() == null || groupMessageViewed.from() == null) throw new BadRequestException("参数错误");
+        return OperationData.success(groupMessageViewed);
     }
 
     @PostMapping("message/text/send")

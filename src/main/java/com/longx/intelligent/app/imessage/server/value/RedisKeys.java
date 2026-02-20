@@ -303,14 +303,37 @@ public class RedisKeys {
         private static final String BASE_PATH = "group_chat_message";
 
         private static final String GROUP_CHAT_MESSAGE = BASE_PATH + ":{TO}" + ":{UUID}";
+
+        private static final String GROUP_CHAT_MESSAGE_PENDING_CHANNELS = BASE_PATH  + ":pending:channels" + ":{TO}" + ":{UUID}";
         public static String getGroupChatMessage(String to, String uuid){
             return GROUP_CHAT_MESSAGE.replace("{TO}", to).replace("{UUID}", uuid);
         }
         public static String getGroupChatMessagePendingChannels(String to, String uuid){
-            return GROUP_CHAT_MESSAGE.replace("{TO}", to).replace("{UUID}", uuid) + ":pending:channels";
+            return GROUP_CHAT_MESSAGE_PENDING_CHANNELS.replace("{TO}", to).replace("{UUID}", uuid);
         }
-        public static String getGroupChatMessagePendingChannelsPattern(String to){
-            return GROUP_CHAT_MESSAGE.replace("{TO}", to).replace("{UUID}", "*") + ":pending:channels";
+        public static String getGroupChatMessagePendingChannelsPatternMessage(String messageUuid){
+            return GROUP_CHAT_MESSAGE_PENDING_CHANNELS.replace("{TO}", "*").replace("{UUID}", messageUuid);
+        }
+        public static String getGroupChatMessagePendingChannelsPatternTo(String to){
+            return GROUP_CHAT_MESSAGE_PENDING_CHANNELS.replace("{TO}", to).replace("{UUID}", "*");
+        }
+
+        public static String parseToFromPendingChannelsKey(String key) {
+            String prefix = BASE_PATH + ":pending:channels:";
+            if (!key.startsWith(prefix)) return null;
+            String remain = key.substring(prefix.length());
+            int idx = remain.indexOf(':');
+            if (idx == -1) return null;
+            return remain.substring(0, idx);
+        }
+
+        public static String parseUuidFromPendingChannelsKey(String key) {
+            String prefix = BASE_PATH + ":pending:channels:";
+            if (!key.startsWith(prefix)) return null;
+            String remain = key.substring(prefix.length());
+            int idx = remain.indexOf(':');
+            if (idx == -1) return null;
+            return remain.substring(idx + 1);
         }
 
         public static class GroupChatMessageHashKey {

@@ -24,5 +24,5 @@ public interface GroupChatMapper {
 
     void insertExpiredMessageGroupChatMessage(GroupChatMessage groupChatMessage);
 
-    GroupChatMessage findGroupChatMessage(String receiverChannel, String uuid);
+    GroupChatMessage findGroupChatMessage(String messageUuid);
 }

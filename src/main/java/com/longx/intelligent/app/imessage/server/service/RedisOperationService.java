@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -565,28 +566,20 @@ public class RedisOperationService {
         }
 
         public MessageViewed viewMessage(String currentUserImessageId, String messageUuid){
-            String messagePrefix = RedisKeys.Chat.getChatMessagePrefix(currentUserImessageId);
-            Set<String> keys = redisOperator.keys(messagePrefix + "*");
-            String viewedUuid = null;
+            String messageKey = RedisKeys.Chat.getChatMessage(currentUserImessageId, messageUuid);
+            doOtherWhenDeleteMessage(messageKey);
             String other = null;
-            for (String key : keys) {
-                String thisUuid = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.UUID);
-                if(thisUuid.equals(messageUuid)){
-                    viewedUuid = thisUuid;
-                    doOtherWhenDeleteMessage(key);
-                    String from = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.FROM);
-                    String to = (String) redisOperator.hGet(key, RedisKeys.Chat.ChatMessageHashKey.TO);
-                    if(currentUserImessageId.equals(from)){
-                        other = to;
-                    }else if(currentUserImessageId.equals(to)){
-                        other = from;
-                    }
-                    redisOperator.delete(key);
-                    break;
-                }
+            String from = (String) redisOperator.hGet(messageKey, RedisKeys.Chat.ChatMessageHashKey.FROM);
+            String to = (String) redisOperator.hGet(messageKey, RedisKeys.Chat.ChatMessageHashKey.TO);
+            if(currentUserImessageId.equals(from)){
+                other = to;
+            }else if(currentUserImessageId.equals(to)){
+                other = from;
             }
+            redisOperator.delete(messageKey);
+            String messagePrefix = RedisKeys.Chat.getChatMessagePrefix(currentUserImessageId);
             int notViewedCount = redisOperator.keys(messagePrefix + "*").size();
-            return new MessageViewed(notViewedCount, viewedUuid, other);
+            return new MessageViewed(notViewedCount, messageUuid, other);
         }
 
         public void viewAllMessage(String currentUserImessageId, String other){
@@ -678,14 +671,47 @@ public class RedisOperationService {
             }
             redisOperator.expireForHash(groupChatMessageRedisKey, Constants.CHAT_MESSAGE_EXPIRATION_TIME_DAY, TimeUnit.DAYS);
             String setKey = RedisKeys.GroupChat.getGroupChatMessagePendingChannels(groupChatMessage.getTo(), groupChatMessage.getUuid());
-            redisOperator.sAdd(setKey, pendingChannelIds);
+            redisOperator.sAdd(setKey, pendingChannelIds.toArray());
             redisOperator.expireForSet(setKey, Constants.CHAT_MESSAGE_EXPIRATION_TIME_DAY, TimeUnit.DAYS);
         }
 
-        public void removePendingChannelIds(String to, Object... pendingChannelIds){
-            String groupChatMessagePattern = RedisKeys.GroupChat.getGroupChatMessagePendingChannelsPattern(to);
+        public GroupMessageViewed viewMessage(String messageUuid, String currentUserImessageId){
+            String groupChatMessagePattern = RedisKeys.GroupChat.getGroupChatMessagePendingChannelsPatternMessage(messageUuid);
+            AtomicReference<String> from = new AtomicReference<>();
+            AtomicReference<String> to = new AtomicReference<>();
+            AtomicInteger notViewedCount = new AtomicInteger();
             redisOperator.keys(groupChatMessagePattern).forEach(key -> {
-                redisOperator.sRemove(key, pendingChannelIds);
+                redisOperator.sRemove(key, currentUserImessageId);
+                String to1 = RedisKeys.GroupChat.parseToFromPendingChannelsKey(key);
+                String uuid = RedisKeys.GroupChat.parseUuidFromPendingChannelsKey(key);
+                String groupChatMessageKey = RedisKeys.GroupChat.getGroupChatMessage(to1, uuid);
+                from.set((String) redisOperator.hGet(groupChatMessageKey, RedisKeys.Chat.ChatMessageHashKey.FROM));
+                to.set((String) redisOperator.hGet(groupChatMessageKey, RedisKeys.Chat.ChatMessageHashKey.TO));
+                if(redisOperator.sMembers(key).isEmpty()){
+                    doOtherWhenDeleteMessage(groupChatMessageKey);
+                    redisOperator.delete(groupChatMessageKey);
+                    redisOperator.delete(key);
+                }
+                groupChannelService.findAllAssociatedGroupChannels(currentUserImessageId).forEach(groupChannel -> {
+                    String messagePrefix = RedisKeys.GroupChat.getGroupChatMessagePrefix(groupChannel.getGroupChannelId());
+                    notViewedCount.addAndGet(redisOperator.keys(messagePrefix + "*").size());
+                });
+            });
+            return new GroupMessageViewed(notViewedCount.get(), messageUuid, to.get(), from.get());
+        }
+
+        public void viewAllMessage(String groupChannelId, String currentUserImessageId){
+            String groupChatMessagePattern = RedisKeys.GroupChat.getGroupChatMessagePendingChannelsPatternTo(groupChannelId);
+            redisOperator.keys(groupChatMessagePattern).forEach(key -> {
+                redisOperator.sRemove(key, currentUserImessageId);
+                if(redisOperator.sMembers(key).isEmpty()){
+                    String to1 = RedisKeys.GroupChat.parseToFromPendingChannelsKey(key);
+                    String uuid = RedisKeys.GroupChat.parseUuidFromPendingChannelsKey(key);
+                    String groupChatMessageKey = RedisKeys.GroupChat.getGroupChatMessage(to1, uuid);
+                    doOtherWhenDeleteMessage(groupChatMessageKey);
+                    redisOperator.delete(groupChatMessageKey);
+                    redisOperator.delete(key);
+                }
             });
         }
 
@@ -718,8 +744,10 @@ public class RedisOperationService {
 
         public void deleteGroupChatMessage(String receiverChannel, String uuid){
             String messageRedisKey = RedisKeys.GroupChat.getGroupChatMessage(receiverChannel, uuid);
+            String groupChatMessagePattern = RedisKeys.GroupChat.getGroupChatMessagePendingChannels(receiverChannel, uuid);
             doOtherWhenDeleteMessage(messageRedisKey);
             redisOperator.delete(messageRedisKey);
+            redisOperator.delete(groupChatMessagePattern);
         }
 
         private boolean doOtherWhenDeleteMessage(String key) {
@@ -774,7 +802,7 @@ public class RedisOperationService {
             return result;
         }
 
-        public Set<String> getAllPendingChannelIds( GroupChatMessage groupChatMessage){
+        public Set<String> getAllPendingChannelIds(GroupChatMessage groupChatMessage){
             String setKey = RedisKeys.GroupChat.getGroupChatMessagePendingChannels(groupChatMessage.getTo(), groupChatMessage.getUuid());
             return redisOperator.sMembers(setKey).stream()
                     .filter(o -> o instanceof String)

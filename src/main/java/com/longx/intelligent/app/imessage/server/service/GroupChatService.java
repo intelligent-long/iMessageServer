@@ -1,6 +1,7 @@
 package com.longx.intelligent.app.imessage.server.service;
 
 import com.longx.intelligent.app.imessage.server.data.GroupChatMessage;
+import com.longx.intelligent.app.imessage.server.data.GroupMessageViewed;
 import com.longx.intelligent.app.imessage.server.mapper.GroupChatMapper;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,9 +96,15 @@ public class GroupChatService {
         return allGroupChatMessage;
     }
 
-    public void removeCurrentPendingChannelId(String currentUserId){
-        groupChannelService.findAllAssociatedGroupChannels(currentUserId).forEach(groupChannel -> {
-            redisOperationService.GROUP_CHAT.removePendingChannelIds(groupChannel.getGroupChannelId(), currentUserId);
-        });
+    public GroupMessageViewed viewMessage(String messageUuid, String currentUserImessageId){
+        return redisOperationService.GROUP_CHAT.viewMessage(messageUuid, currentUserImessageId);
+    }
+
+    public void viewAllMessage(String groupChannelId, String currentUserImessageId){
+        redisOperationService.GROUP_CHAT.viewAllMessage(groupChannelId, currentUserImessageId);
+    }
+
+    public GroupChatMessage findGroupChatMessage(String messageUuid){
+        return groupChatMapper.findGroupChatMessage(messageUuid);
     }
 }

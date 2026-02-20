@@ -1,17 +1,17 @@
 /*
  Navicat Premium Data Transfer
 
- Source Server         : LocalHost
+ Source Server         : 43.207.206.124_3306
  Source Server Type    : MySQL
- Source Server Version : 80030
- Source Host           : localhost:3306
- Source Schema         : imessage
+ Source Server Version : 80044
+ Source Host           : 43.207.206.124:3306
+ Source Schema         : apollo
 
  Target Server Type    : MySQL
- Target Server Version : 80030
+ Target Server Version : 80044
  File Encoding         : 65001
 
- Date: 05/02/2025 02:55:33
+ Date: 21/02/2026 02:04:31
 */
 
 SET NAMES utf8mb4;
@@ -28,8 +28,8 @@ CREATE TABLE `allow_chat_message` (
   `allow_notice` tinyint(1) NOT NULL DEFAULT '1',
   UNIQUE KEY `ichat_id` (`imessage_id`,`channel_imessage_id`) USING BTREE,
   KEY `channel_ichat_id` (`channel_imessage_id`) USING BTREE,
-  CONSTRAINT `allow_chat_message_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `allow_chat_message_ibfk_2` FOREIGN KEY (`channel_imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `allow_chat_message_ibfk_2` FOREIGN KEY (`channel_imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
+  CONSTRAINT `allow_chat_message_ibfk_3` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
@@ -79,7 +79,7 @@ CREATE TABLE `avatar` (
   `extension` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
   `time` datetime NOT NULL,
   KEY `ichat_id` (`imessage_id`) USING BTREE,
-  CONSTRAINT `avatar_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `avatar_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
@@ -97,8 +97,8 @@ CREATE TABLE `broadcast` (
   PRIMARY KEY (`index`,`broadcast_id`) USING BTREE,
   KEY `ichat_id` (`imessage_id`) USING BTREE,
   KEY `broadcast_id` (`broadcast_id`) USING BTREE,
-  CONSTRAINT `broadcast_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=141 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs ROW_FORMAT=DYNAMIC;
+  CONSTRAINT `broadcast_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
 -- Table structure for broadcast_channel_permission
@@ -108,7 +108,7 @@ CREATE TABLE `broadcast_channel_permission` (
   `imessage_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
   `permission` int NOT NULL,
   PRIMARY KEY (`imessage_id`) USING BTREE,
-  CONSTRAINT `broadcast_channel_permission_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `broadcast_channel_permission_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
@@ -159,7 +159,7 @@ CREATE TABLE `broadcast_like` (
   KEY `broadcast_id` (`broadcast_id`) USING BTREE,
   KEY `channel_id` (`imessage_id`) USING BTREE,
   CONSTRAINT `broadcast_like_ibfk_1` FOREIGN KEY (`broadcast_id`) REFERENCES `broadcast` (`broadcast_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `broadcast_like_ibfk_2` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `broadcast_like_ibfk_2` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
@@ -221,9 +221,27 @@ CREATE TABLE `channel_association` (
   PRIMARY KEY (`association_id`) USING BTREE,
   KEY `ichat_id` (`imessage_id`) USING BTREE,
   KEY `channel_ichat_id` (`channel_imessage_id`) USING BTREE,
-  CONSTRAINT `channel_association_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `channel_association_ibfk_2` FOREIGN KEY (`channel_imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `channel_association_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`),
+  CONSTRAINT `channel_association_ibfk_2` FOREIGN KEY (`channel_imessage_id`) REFERENCES `user` (`imessage_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Table structure for channel_collection
+-- ----------------------------
+DROP TABLE IF EXISTS `channel_collection`;
+CREATE TABLE `channel_collection` (
+  `uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `owner` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `channel_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `add_time` datetime DEFAULT NULL,
+  `order` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`uuid`),
+  KEY `channel_id` (`channel_id`),
+  KEY `owner` (`owner`),
+  CONSTRAINT `channel_collection_ibfk_1` FOREIGN KEY (`channel_id`) REFERENCES `user` (`imessage_id`),
+  CONSTRAINT `channel_collection_ibfk_2` FOREIGN KEY (`owner`) REFERENCES `user` (`imessage_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
 
 -- ----------------------------
 -- Table structure for channel_note
@@ -236,8 +254,8 @@ CREATE TABLE `channel_note` (
   `is_active` tinyint(1) NOT NULL,
   KEY `ichat_id` (`imessage_id`) USING BTREE,
   KEY `channel_ichat_id` (`channel_imessage_id`) USING BTREE,
-  CONSTRAINT `channel_note_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-  CONSTRAINT `channel_note_ibfk_2` FOREIGN KEY (`channel_imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `channel_note_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`),
+  CONSTRAINT `channel_note_ibfk_2` FOREIGN KEY (`channel_imessage_id`) REFERENCES `user` (`imessage_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
@@ -252,7 +270,7 @@ CREATE TABLE `channel_tag` (
   `is_active` tinyint(1) NOT NULL,
   PRIMARY KEY (`tag_id`) USING BTREE,
   KEY `ichat_id` (`imessage_id`) USING BTREE,
-  CONSTRAINT `channel_tag_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `channel_tag_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------
@@ -278,13 +296,14 @@ CREATE TABLE `chat_message` (
   `from` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
   `to` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
   `time` datetime NOT NULL,
-  `text` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `text` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
   `file_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `image` longblob,
   `file` longblob,
   `video` longblob,
   `voice` longblob,
   `unsend_message_uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  `expired_message_count` int DEFAULT NULL,
   PRIMARY KEY (`uuid`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin ROW_FORMAT=DYNAMIC;
 
@@ -300,6 +319,154 @@ CREATE TABLE `exclude_broadcast_channel` (
   CONSTRAINT `exclude_broadcast_channel_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `exclude_broadcast_channel_ibfk_2` FOREIGN KEY (`channel_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Table structure for group_channel
+-- ----------------------------
+DROP TABLE IF EXISTS `group_channel`;
+CREATE TABLE `group_channel` (
+  `group_channel_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `group_channel_id_user` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `owner` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `create_time` datetime NOT NULL,
+  `is_active` tinyint NOT NULL,
+  `group_channel_id_user_last_change_time` datetime DEFAULT NULL,
+  `1st_level_adcode` int DEFAULT NULL,
+  `2nd_level_adcode` int DEFAULT NULL,
+  `3rd_level_adcode` int DEFAULT NULL,
+  `avatar_hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `group_join_verification_enabled` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`group_channel_id`),
+  KEY `owner` (`owner`),
+  KEY `avatar_hash` (`avatar_hash`),
+  KEY `1st_level_adcode` (`1st_level_adcode`),
+  KEY `2nd_level_adcode` (`2nd_level_adcode`),
+  KEY `3rd_level_adcode` (`3rd_level_adcode`),
+  CONSTRAINT `group_channel_ibfk_2` FOREIGN KEY (`avatar_hash`) REFERENCES `group_channel_avatar` (`hash`),
+  CONSTRAINT `group_channel_ibfk_3` FOREIGN KEY (`1st_level_adcode`) REFERENCES `amap_district_1st_level` (`1st_level_adcode`),
+  CONSTRAINT `group_channel_ibfk_4` FOREIGN KEY (`2nd_level_adcode`) REFERENCES `amap_district_2nd_level` (`2nd_level_adcode`),
+  CONSTRAINT `group_channel_ibfk_5` FOREIGN KEY (`3rd_level_adcode`) REFERENCES `amap_district_3rd_level` (`3rd_level_adcode`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
+
+-- ----------------------------
+-- Table structure for group_channel_association
+-- ----------------------------
+DROP TABLE IF EXISTS `group_channel_association`;
+CREATE TABLE `group_channel_association` (
+  `association_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `group_channel_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `owner` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `requester` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `inviter` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `request_message` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `request_time` datetime NOT NULL,
+  `accept_time` datetime DEFAULT NULL,
+  `is_active` tinyint NOT NULL,
+  `invite_uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  PRIMARY KEY (`association_id`),
+  KEY `group_channel_id` (`group_channel_id`),
+  KEY `channel_imessage_id` (`owner`),
+  KEY `invite_channel_imessage_id` (`requester`),
+  KEY `inviter` (`inviter`),
+  CONSTRAINT `group_channel_association_ibfk_1` FOREIGN KEY (`group_channel_id`) REFERENCES `group_channel` (`group_channel_id`),
+  CONSTRAINT `group_channel_association_ibfk_2` FOREIGN KEY (`owner`) REFERENCES `user` (`imessage_id`),
+  CONSTRAINT `group_channel_association_ibfk_3` FOREIGN KEY (`requester`) REFERENCES `user` (`imessage_id`),
+  CONSTRAINT `group_channel_association_ibfk_4` FOREIGN KEY (`inviter`) REFERENCES `user` (`imessage_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
+
+-- ----------------------------
+-- Table structure for group_channel_avatar
+-- ----------------------------
+DROP TABLE IF EXISTS `group_channel_avatar`;
+CREATE TABLE `group_channel_avatar` (
+  `hash` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `group_channel_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `data` longblob NOT NULL,
+  `extension` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `time` datetime NOT NULL,
+  KEY `group_channel_id` (`group_channel_id`),
+  KEY `hash` (`hash`),
+  CONSTRAINT `group_channel_avatar_ibfk_1` FOREIGN KEY (`group_channel_id`) REFERENCES `group_channel` (`group_channel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
+
+-- ----------------------------
+-- Table structure for group_channel_collection
+-- ----------------------------
+DROP TABLE IF EXISTS `group_channel_collection`;
+CREATE TABLE `group_channel_collection` (
+  `uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `owner` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `group_channel_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `add_time` datetime DEFAULT NULL,
+  `order` int DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
+
+-- ----------------------------
+-- Table structure for group_channel_note
+-- ----------------------------
+DROP TABLE IF EXISTS `group_channel_note`;
+CREATE TABLE `group_channel_note` (
+  `imessage_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `group_channel_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `note` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `is_active` tinyint(1) NOT NULL,
+  KEY `group_channel_id` (`group_channel_id`),
+  KEY `imessage_id` (`imessage_id`),
+  CONSTRAINT `group_channel_note_ibfk_2` FOREIGN KEY (`group_channel_id`) REFERENCES `group_channel` (`group_channel_id`),
+  CONSTRAINT `group_channel_note_ibfk_3` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
+
+-- ----------------------------
+-- Table structure for group_channel_tag
+-- ----------------------------
+DROP TABLE IF EXISTS `group_channel_tag`;
+CREATE TABLE `group_channel_tag` (
+  `tag_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `imessage_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `order` int NOT NULL,
+  `is_active` tinyint(1) NOT NULL,
+  PRIMARY KEY (`tag_id`),
+  KEY `imessage_id` (`imessage_id`),
+  CONSTRAINT `group_channel_tag_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
+
+-- ----------------------------
+-- Table structure for group_channel_tag_group_channel
+-- ----------------------------
+DROP TABLE IF EXISTS `group_channel_tag_group_channel`;
+CREATE TABLE `group_channel_tag_group_channel` (
+  `tag_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `group_channel_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  KEY `tag_id` (`tag_id`),
+  KEY `group_channel_id` (`group_channel_id`),
+  CONSTRAINT `group_channel_tag_group_channel_ibfk_1` FOREIGN KEY (`tag_id`) REFERENCES `group_channel_tag` (`tag_id`),
+  CONSTRAINT `group_channel_tag_group_channel_ibfk_2` FOREIGN KEY (`group_channel_id`) REFERENCES `group_channel` (`group_channel_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
+
+-- ----------------------------
+-- Table structure for group_chat_message
+-- ----------------------------
+DROP TABLE IF EXISTS `group_chat_message`;
+CREATE TABLE `group_chat_message` (
+  `uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `type` tinyint NOT NULL,
+  `from` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `to` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs NOT NULL,
+  `time` datetime NOT NULL,
+  `text` varchar(5000) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `file_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `image` longblob,
+  `file` longblob,
+  `video` longblob,
+  `voice` longblob,
+  `unsend_message_uuid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_as_cs DEFAULT NULL,
+  `expired_message_count` int DEFAULT NULL,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs;
 
 -- ----------------------------
 -- Table structure for user
@@ -338,7 +505,7 @@ CREATE TABLE `user_profile_visibility` (
   `sex_visible` tinyint(1) NOT NULL,
   `region_visible` tinyint(1) NOT NULL,
   UNIQUE KEY `ichat_id` (`imessage_id`) USING BTREE,
-  CONSTRAINT `user_profile_visibility_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+  CONSTRAINT `user_profile_visibility_ibfk_1` FOREIGN KEY (`imessage_id`) REFERENCES `user` (`imessage_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_cs ROW_FORMAT=DYNAMIC;
 
 -- ----------------------------

@@ -127,4 +127,23 @@ public class GroupChatMessage {
     public Integer getExpiredMessageCount() {
         return expiredMessageCount;
     }
+
+    @Override
+    public String toString() {
+        return "GroupChatMessage{" +
+                "type=" + type +
+                ", uuid='" + uuid + '\'' +
+                ", from='" + from + '\'' +
+                ", to='" + to + '\'' +
+                ", time=" + time +
+                ", text='" + text + '\'' +
+                ", fileName='" + fileName + '\'' +
+                ", imageId='" + imageId + '\'' +
+                ", fileId='" + fileId + '\'' +
+                ", videoId='" + videoId + '\'' +
+                ", voiceId='" + voiceId + '\'' +
+                ", unsendMessageUuid='" + unsendMessageUuid + '\'' +
+                ", expiredMessageCount=" + expiredMessageCount +
+                '}';
+    }
 }

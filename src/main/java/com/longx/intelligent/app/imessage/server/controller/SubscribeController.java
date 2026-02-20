@@ -100,4 +100,9 @@ public class SubscribeController {
         return "";
     }
 
+    @SubscribeMapping(StompDestinations.GROUP_CHAT_MESSAGES_UPDATE)
+    public Object onSubscribeGroupChatMessagesUpdate(){
+        return "";
+    }
+
 }
