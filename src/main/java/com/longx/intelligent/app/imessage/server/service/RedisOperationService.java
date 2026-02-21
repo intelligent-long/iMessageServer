@@ -710,10 +710,6 @@ public class RedisOperationService {
                     }
                 });
             });
-            String messagePattern = RedisKeys.GroupChat.getGroupChatMessagePattern(toFound.get());
-            redisOperator.keys(messagePattern).forEach(key -> {
-
-            });
             return new GroupMessageViewed(allNotViewedCount.get(), currentNotViewedCount.get(), messageUuid, to.get(), from.get());
         }
 
