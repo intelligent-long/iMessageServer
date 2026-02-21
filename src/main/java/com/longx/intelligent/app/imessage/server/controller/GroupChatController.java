@@ -47,7 +47,7 @@ public class GroupChatController {
     public OperationData viewMessage(@PathVariable String messageUuid, HttpSession session){
         User currentUser = sessionService.getUserOfSession(session);
         GroupMessageViewed groupMessageViewed = groupChatService.viewMessage(messageUuid, currentUser.getImessageId());
-        if(groupMessageViewed.viewedUuid() == null || groupMessageViewed.groupId() == null || groupMessageViewed.from() == null) throw new BadRequestException("参数错误");
+        if(groupMessageViewed.getViewedUuid() == null || groupMessageViewed.getGroupId() == null || groupMessageViewed.getFrom() == null) throw new BadRequestException("参数错误");
         return OperationData.success(groupMessageViewed);
     }
 

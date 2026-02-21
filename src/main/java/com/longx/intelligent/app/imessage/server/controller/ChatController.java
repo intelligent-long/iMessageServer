@@ -88,7 +88,7 @@ public class ChatController {
             pw.close();
         }catch (Exception e){
             e.printStackTrace();
-            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getUuid());
+            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getFrom(), chatMessage.getUuid());
             pw.print(JsonUtil.toJson(OperationData.failure()));
             pw.close();
             return;
@@ -130,7 +130,7 @@ public class ChatController {
             pw.close();
         }catch (Exception e){
             e.printStackTrace();
-            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getUuid());
+            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getFrom(), chatMessage.getUuid());
             pw.print(JsonUtil.toJson(OperationData.failure()));
             pw.close();
             return;
@@ -189,7 +189,7 @@ public class ChatController {
             pw.close();
         }catch (Exception e){
             e.printStackTrace();
-            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getUuid());
+            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getFrom(), chatMessage.getUuid());
             pw.print(JsonUtil.toJson(OperationData.failure()));
             pw.close();
             return;
@@ -248,7 +248,7 @@ public class ChatController {
             pw.close();
         }catch (Exception e){
             e.printStackTrace();
-            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getUuid());
+            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getFrom(), chatMessage.getUuid());
             pw.print(JsonUtil.toJson(OperationData.failure()));
             pw.close();
             return;
@@ -320,7 +320,7 @@ public class ChatController {
             pw.close();
         }catch (Exception e){
             e.printStackTrace();
-            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getUuid());
+            chatService.deleteChatMessage(chatMessage.getTo(), chatMessage.getFrom(), chatMessage.getUuid());
             pw.print(JsonUtil.toJson(OperationData.failure()));
             pw.close();
             return;
@@ -375,13 +375,13 @@ public class ChatController {
             pw.close();
         }catch (Exception e){
             e.printStackTrace();
-            chatService.deleteChatMessage(unsendChatMessage.getTo(), unsendChatMessage.getUuid());
+            chatService.deleteChatMessage(unsendChatMessage.getTo(), unsendChatMessage.getFrom(), unsendChatMessage.getUuid());
             pw.print(JsonUtil.toJson(OperationData.failure()));
             pw.close();
             return;
         }
 
-        chatService.deleteChatMessage(receiver, chatMessageUuid);
+        chatService.deleteChatMessage(receiver, user.getImessageId(), chatMessageUuid);
         chatService.sendChatMessageStep2(unsendChatMessage, null);
     }
 }

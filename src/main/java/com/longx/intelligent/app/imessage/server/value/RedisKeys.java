@@ -1,8 +1,5 @@
 package com.longx.intelligent.app.imessage.server.value;
 
-import com.longx.intelligent.app.imessage.server.data.Channel;
-import com.longx.intelligent.app.imessage.server.data.GroupChannel;
-
 /**
  * Created by LONG on 2024/3/30 at 12:53 AM.
  */
@@ -228,9 +225,19 @@ public class RedisKeys {
     public static class Chat{
         private static final String BASE_PATH = "chat_message";
 
-        private static final String CHAT_MESSAGE = BASE_PATH + ":{RECEIVER}:{UUID}";
-        public static String getChatMessage(String receiverImessageId, String uuid){
-            return CHAT_MESSAGE.replace("{RECEIVER}", receiverImessageId).replace("{UUID}", uuid);
+        private static final String CHAT_MESSAGE = BASE_PATH + ":{RECEIVER}:{FROM}:{UUID}";
+        public static String getChatMessage(String receiverImessageId, String fromImessageId, String uuid){
+            return CHAT_MESSAGE
+                    .replace("{RECEIVER}", receiverImessageId)
+                    .replace("{FROM}", fromImessageId)
+                    .replace("{UUID}", uuid);
+        }
+
+        private static final String CHAT_MESSAGE_PATTERN_UUID = BASE_PATH + ":{RECEIVER}:*:{UUID}";
+        public static String getChatMessagePatternUuid(String receiverImessageId, String uuid){
+            return CHAT_MESSAGE_PATTERN_UUID
+                    .replace("{RECEIVER}", receiverImessageId)
+                    .replace("{UUID}", uuid);
         }
 
         public static class ChatMessageHashKey {
@@ -249,10 +256,18 @@ public class RedisKeys {
             public static final String EXPIRED_MESSAGE_COUNT = "expired_message_count";
         }
 
-        private static final String CHAT_MESSAGE_PREFIX = BASE_PATH + ":{RECEIVER}:";
+        private static final String CHAT_MESSAGE_PATTERN_RECEIVER = BASE_PATH + ":{RECEIVER}:*";
 
-        public static String getChatMessagePrefix(String receiverImessageId) {
-            return CHAT_MESSAGE_PREFIX.replace("{RECEIVER}", receiverImessageId);
+        public static String getChatMessagePatternReceiver(String receiverImessageId) {
+            return CHAT_MESSAGE_PATTERN_RECEIVER.replace("{RECEIVER}", receiverImessageId);
+        }
+
+        private static final String CHAT_MESSAGE_PATTERN_RECEIVER_FROM = BASE_PATH + ":{RECEIVER}:{FROM}:*";
+
+        public static String getChatMessagePatternReceiverFrom(String receiverImessageId, String fromImessageId) {
+            return CHAT_MESSAGE_PATTERN_RECEIVER_FROM
+                    .replace("{RECEIVER}", receiverImessageId)
+                    .replace("{FROM}", fromImessageId);
         }
 
         public static class ChatMessageImageHashKey {

@@ -66,8 +66,8 @@ public class ChatService {
         }
     }
 
-    public void deleteChatMessage(String receiver, String uuid){
-        redisOperationService.CHAT.deleteChatMessage(receiver, uuid);
+    public void deleteChatMessage(String receiver, String from, String uuid){
+        redisOperationService.CHAT.deleteChatMessage(receiver, from, uuid);
     }
 
     public List<ChatMessage> getAllUnviewedChatMessages(String currentUserImessageId){
@@ -98,8 +98,8 @@ public class ChatService {
         redisOperationService.CHAT.viewAllMessage(currentUserImessageId, other);
     }
 
-    public ChatMessage getChatMessage(String receiver, String uuid){
-        return redisOperationService.CHAT.getChatMessage(receiver, uuid);
+    public ChatMessage getChatMessage(String receiver, String from, String uuid){
+        return redisOperationService.CHAT.getChatMessage(receiver, from, uuid);
     }
 
     public ChatMessage findChatMessage(String receiver, String uuid){
