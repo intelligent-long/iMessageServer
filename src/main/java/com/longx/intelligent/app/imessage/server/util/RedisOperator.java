@@ -109,4 +109,8 @@ public class RedisOperator {
         }
     }
 
+    public boolean sContains(String key, Object value) {
+        return Boolean.TRUE.equals(setOperations.isMember(key, value));
+    }
+
 }

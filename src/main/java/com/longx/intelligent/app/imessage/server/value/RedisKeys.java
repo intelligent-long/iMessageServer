@@ -326,7 +326,7 @@ public class RedisKeys {
         public static String getGroupChatMessagePendingChannels(String to, String uuid){
             return GROUP_CHAT_MESSAGE_PENDING_CHANNELS.replace("{TO}", to).replace("{UUID}", uuid);
         }
-        public static String getGroupChatMessagePendingChannelsPatternMessage(String messageUuid){
+        public static String getGroupChatMessagePendingChannelsPatternUuid(String messageUuid){
             return GROUP_CHAT_MESSAGE_PENDING_CHANNELS.replace("{TO}", "*").replace("{UUID}", messageUuid);
         }
         public static String getGroupChatMessagePendingChannelsPatternTo(String to){
@@ -367,10 +367,10 @@ public class RedisKeys {
             public static final String EXPIRED_MESSAGE_COUNT = "expired_message_count";
         }
 
-        private static final String GROUP_CHAT_MESSAGE_PREFIX = BASE_PATH + ":{TO}:";
+        private static final String GROUP_CHAT_MESSAGE_PATTERN = BASE_PATH + ":{TO}:*";
 
-        public static String getGroupChatMessagePrefix(String receiverChannel) {
-            return GROUP_CHAT_MESSAGE_PREFIX.replace("{TO}", receiverChannel);
+        public static String getGroupChatMessagePattern(String receiverChannel) {
+            return GROUP_CHAT_MESSAGE_PATTERN.replace("{TO}", receiverChannel);
         }
 
         public static class GroupChatMessageImageHashKey {

@@ -679,15 +679,15 @@ public class RedisOperationService {
         }
 
         public GroupMessageViewed viewMessage(String messageUuid, String currentUserImessageId){
-            String groupChatMessagePendingChannelsPattern = RedisKeys.GroupChat.getGroupChatMessagePendingChannelsPatternMessage(messageUuid);
+            String groupChatMessagePendingChannelsPatternUuid = RedisKeys.GroupChat.getGroupChatMessagePendingChannelsPatternUuid(messageUuid);
             AtomicReference<String> from = new AtomicReference<>();
             AtomicReference<String> to = new AtomicReference<>();
-            AtomicInteger notViewedCount = new AtomicInteger();
-            redisOperator.keys(groupChatMessagePendingChannelsPattern).forEach(key -> {
+            AtomicReference<String> toFound = new AtomicReference<>();
+            redisOperator.keys(groupChatMessagePendingChannelsPatternUuid).forEach(key -> {
                 redisOperator.sRemove(key, currentUserImessageId);
-                String to1 = RedisKeys.GroupChat.parseToFromPendingChannelsKey(key);
+                toFound.set(RedisKeys.GroupChat.parseToFromPendingChannelsKey(key));
                 String uuid = RedisKeys.GroupChat.parseUuidFromPendingChannelsKey(key);
-                String groupChatMessageKey = RedisKeys.GroupChat.getGroupChatMessage(to1, uuid);
+                String groupChatMessageKey = RedisKeys.GroupChat.getGroupChatMessage(toFound.get(), uuid);
                 from.set((String) redisOperator.hGet(groupChatMessageKey, RedisKeys.Chat.ChatMessageHashKey.FROM));
                 to.set((String) redisOperator.hGet(groupChatMessageKey, RedisKeys.Chat.ChatMessageHashKey.TO));
                 if(redisOperator.sMembers(key).isEmpty()){
@@ -695,13 +695,26 @@ public class RedisOperationService {
                     redisOperator.delete(groupChatMessageKey);
                     redisOperator.delete(key);
                 }
-                groupChannelService.findAllAssociatedGroupChannels(currentUserImessageId).forEach(groupChannel -> {
-                    String messagePrefix = RedisKeys.GroupChat.getGroupChatMessagePrefix(groupChannel.getGroupChannelId());
-                    notViewedCount.addAndGet(redisOperator.keys(messagePrefix + "*").size());
-                });
-                System.err.println("notViewedCount" + notViewedCount);
             });
-            return new GroupMessageViewed(notViewedCount.get(), messageUuid, to.get(), from.get());
+            AtomicInteger allNotViewedCount = new AtomicInteger();
+            AtomicInteger currentNotViewedCount = new AtomicInteger();
+            groupChannelService.findAllAssociatedGroupChannels(currentUserImessageId).forEach(groupChannel -> {
+                String messagePendingChannelsPattern = RedisKeys.GroupChat.getGroupChatMessagePendingChannelsPatternTo(groupChannel.getGroupChannelId());
+                redisOperator.keys(messagePendingChannelsPattern).forEach(key -> {
+                    if(redisOperator.sContains(key, currentUserImessageId)){
+                        allNotViewedCount.incrementAndGet();
+                        String toFound1 = RedisKeys.GroupChat.parseToFromPendingChannelsKey(key);
+                        if(Objects.equals(toFound1, to.get())){
+                            currentNotViewedCount.incrementAndGet();
+                        }
+                    }
+                });
+            });
+            String messagePattern = RedisKeys.GroupChat.getGroupChatMessagePattern(toFound.get());
+            redisOperator.keys(messagePattern).forEach(key -> {
+
+            });
+            return new GroupMessageViewed(allNotViewedCount.get(), currentNotViewedCount.get(), messageUuid, to.get(), from.get());
         }
 
         public void viewAllMessage(String groupChannelId, String currentUserImessageId){
@@ -785,8 +798,8 @@ public class RedisOperationService {
 
         public List<GroupChatMessage> getAllGroupChatMessage(String to){
             List<GroupChatMessage> result = new ArrayList<>();
-            String groupChatMessagePrefix = RedisKeys.GroupChat.getGroupChatMessagePrefix(to);
-            Set<String> keys = redisOperator.keys(groupChatMessagePrefix + "*");
+            String groupChatMessagePattern = RedisKeys.GroupChat.getGroupChatMessagePattern(to);
+            Set<String> keys = redisOperator.keys(groupChatMessagePattern);
             keys.forEach(key -> {
                 int type = Integer.parseInt(redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TYPE).toString());
                 String uuid = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.UUID);
