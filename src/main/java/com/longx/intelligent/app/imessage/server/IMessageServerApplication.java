@@ -1,10 +1,12 @@
 package com.longx.intelligent.app.imessage.server;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.longx.intelligent.app.imessage.server.context.SpringContextHolder;
 import com.longx.intelligent.app.imessage.server.ui.LaunchUi;
 import com.longx.intelligent.app.imessage.server.ui.LogUi;
+import com.longx.intelligent.app.imessage.server.util.JsonUtil;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -13,6 +15,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 
+import java.io.File;
 import java.util.Map;
 
 @SpringBootApplication
@@ -22,13 +25,37 @@ import java.util.Map;
 @EnableScheduling
 public class IMessageServerApplication {
 
-    static {
+    public static void main(String[] args) {
+        String configFile = getConfigArg(args);
+        if (configFile != null) {
+            startFromConfig(configFile, args);
+            return;
+        }
         System.setProperty("apple.awt.UIElement", "true");
         FlatLaf.setUseNativeWindowDecorations(false);
         FlatLightLaf.setup();
+        startWithGui(args);
     }
 
-    public static void main(String[] args) {
+    private static void startFromConfig(String configFile, String[] args) {
+        try {
+            Map<String, String> props =
+                    JsonUtil.loadObjectFromJsonFile(
+                            new File(configFile),
+                            new TypeReference<>() {}
+                    );
+            props.forEach(System::setProperty);
+            new SpringApplicationBuilder(IMessageServerApplication.class)
+                    .profiles("cli")
+                    .properties(Map.of("spring.config.name", "gui-application"))
+                    .run(args);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("配置文件加载失败: " + configFile);
+        }
+    }
+
+    private static void startWithGui(String[] args) {
         LaunchUi launchUi = LaunchUi.getInstance();
         launchUi.setLaunchAction(() -> {
             launchUi.getProperties().forEach(System::setProperty);
@@ -38,6 +65,7 @@ public class IMessageServerApplication {
                 ConfigurableApplicationContext context =
                         new SpringApplicationBuilder(IMessageServerApplication.class)
                                 .properties(Map.of("spring.config.name", "gui-application"))
+                                .profiles("gui")
                                 .run(args);
                 SpringContextHolder.setContext(context);
             }).start();
@@ -45,4 +73,12 @@ public class IMessageServerApplication {
         launchUi.show();
     }
 
+    private static String getConfigArg(String[] args) {
+        for (int i = 0; i < args.length - 1; i++) {
+            if ("-config".equalsIgnoreCase(args[i])) {
+                return args[i + 1];
+            }
+        }
+        return null;
+    }
 }

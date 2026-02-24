@@ -11,11 +11,16 @@ import java.awt.*;
  * Created by LONG on 2024/12/1 at 10:03 PM.
  */
 public class LogUi {
-    private static class InstanceHolder{
+    private static boolean INSTANCE_CREATED = false;
+    private static class InstanceHolder {
         private static final LogUi INSTANCE = new LogUi();
     }
-    public static LogUi getInstance(){
+    public static LogUi getInstance() {
+        INSTANCE_CREATED = true;
         return InstanceHolder.INSTANCE;
+    }
+    public static LogUi getIfExists() {
+        return INSTANCE_CREATED ? InstanceHolder.INSTANCE : null;
     }
     private static final int MAIN_UI_WIDTH = 950;
     private static final int MAIN_UI_HEIGHT = 590;
