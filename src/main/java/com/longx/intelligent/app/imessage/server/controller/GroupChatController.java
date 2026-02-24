@@ -56,13 +56,11 @@ public class GroupChatController {
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter pw = response.getWriter();
         User user = sessionService.getUserOfSession(session);
-
         if(!groupChannelService.isInGroup(postBody.getToGroupId(), user.getImessageId())){
             pw.print(JsonUtil.toJson(new OperationStatus(-101, "未建立关系")));
             pw.close();
             return;
         }
-
         GroupChatMessage groupChatMessage = GroupChatMessage.newText(UUID.randomUUID().toString(), user.getImessageId(),
                 postBody.getToGroupId(), new Date(), postBody.getText());
         groupChatService.sendGroupChatMessageStep1(groupChatMessage, null);
@@ -76,7 +74,6 @@ public class GroupChatController {
             pw.close();
             return;
         }
-
         groupChatService.sendGroupChatMessageStep2(groupChatMessage, null);
     }
 }

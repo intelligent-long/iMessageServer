@@ -35,7 +35,10 @@ public class GroupChatService {
         String fromUserId = groupChatMessage.getFrom();
         List<String> pendingChannelIds = new ArrayList<>();
         groupChannelService.findGroupChannelById(toGroupId, fromUserId).getGroupChannelAssociations().forEach(groupChannelAssociation -> {
-            pendingChannelIds.add(groupChannelAssociation.getRequester().getImessageId());
+            String imessageId = groupChannelAssociation.getRequester().getImessageId();
+            if(!imessageId.equals(fromUserId)){
+                pendingChannelIds.add(imessageId);
+            }
         });
         redisOperationService.GROUP_CHAT.saveGroupChatMessage(groupChatMessage, pendingChannelIds);
         switch (groupChatMessage.getType()){
