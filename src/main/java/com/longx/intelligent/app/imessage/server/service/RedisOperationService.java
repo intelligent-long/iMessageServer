@@ -822,6 +822,32 @@ public class RedisOperationService {
                     .map(o -> (String) o)
                     .collect(Collectors.toSet());
         }
+
+        public GroupChatMessage getGroupChatMessage(String to, String uuid){
+            String key = RedisKeys.GroupChat.getGroupChatMessage(to, uuid);
+            int type = Integer.parseInt(redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TYPE).toString());
+            String uuidFound = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.UUID);
+            String from = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.FROM);
+            String toFound = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TO);
+            Date time = new Date((Long) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TIME));
+            String text = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.TEXT);
+            String extension = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_NAME);
+            String imageId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.IMAGE_ID);
+            String fileId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.FILE_ID);
+            String videoId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.VIDEO_ID);
+            String voiceId = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.VOICE_ID);
+            String unsendMessageUuid = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.UNSEND_MESSAGE_UUID);
+            Integer expiredMessageCount = (Integer) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageHashKey.EXPIRED_MESSAGE_COUNT);
+            return new GroupChatMessage(type, uuidFound, from, toFound, time, text, extension, imageId, fileId, videoId, voiceId, unsendMessageUuid, expiredMessageCount);
+        }
+
+        public Object[] getGroupChatMessageImage(String imageId){
+            String key = RedisKeys.GroupChat.getGroupChatMessageImage(imageId);
+            byte[] image = Base64Util.decodeFromString((String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageImageHashKey.IMAGE));
+            String imageIdRedis = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageImageHashKey.IMAGE_ID);
+            String imageFileName = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageImageHashKey.IMAGE_FILE_NAME);
+            return new Object[]{image, imageIdRedis, imageFileName};
+        }
     }
 
     public class Broadcast{

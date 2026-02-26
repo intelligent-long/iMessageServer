@@ -75,7 +75,7 @@ public class IMessageServerApplication {
 
     private static String getConfigArg(String[] args) {
         for (int i = 0; i < args.length - 1; i++) {
-            if ("-config".equalsIgnoreCase(args[i])) {
+            if ("-cli".equalsIgnoreCase(args[i])) {
                 return args[i + 1];
             }
         }

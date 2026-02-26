@@ -137,7 +137,7 @@ public class ChatController {
     }
 
     @GetMapping("message/image/new/{imageId}")
-    public ResponseEntity<byte[]> getNewChatMessageImage(@PathVariable("imageId") String imageId){
+    public ResponseEntity<byte[]> getNewMessageImage(@PathVariable("imageId") String imageId){
         Object[] objects = chatService.getNewChatMessageImage(imageId);
         byte[] chatMessageImage = (byte[]) objects[0];
         String chatMessageImageFileName = (String) objects[2];

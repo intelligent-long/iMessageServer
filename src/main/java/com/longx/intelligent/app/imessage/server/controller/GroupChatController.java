@@ -1,8 +1,11 @@
 package com.longx.intelligent.app.imessage.server.controller;
 
+import com.longx.intelligent.app.imessage.server.data.ChatMessage;
 import com.longx.intelligent.app.imessage.server.data.GroupChatMessage;
 import com.longx.intelligent.app.imessage.server.data.GroupMessageViewed;
 import com.longx.intelligent.app.imessage.server.data.User;
+import com.longx.intelligent.app.imessage.server.data.request.SendImageChatMessagePostBody;
+import com.longx.intelligent.app.imessage.server.data.request.SendImageGroupChatMessagePostBody;
 import com.longx.intelligent.app.imessage.server.data.request.SendTextGroupChatMessagePostBody;
 import com.longx.intelligent.app.imessage.server.data.response.OperationData;
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
@@ -13,15 +16,26 @@ import com.longx.intelligent.app.imessage.server.service.SessionService;
 import com.longx.intelligent.app.imessage.server.util.JsonUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Valid;
+import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by LONG on 2025/4/12 at 2:22 PM.
@@ -35,6 +49,8 @@ public class GroupChatController {
     private GroupChannelService groupChannelService;
     @Autowired
     private GroupChatService groupChatService;
+    @Autowired
+    private Validator validator;
 
     @GetMapping("message/unviewed/all")
     public OperationData getAllUnviewedChatMessages(HttpSession session) {
@@ -75,5 +91,64 @@ public class GroupChatController {
             return;
         }
         groupChatService.sendGroupChatMessageStep2(groupChatMessage, null);
+    }
+
+    @PostMapping("message/image/send")
+    public void sendImageMessage(@RequestPart("image") @NotNull MultipartFile image, @RequestPart("metadata") @NotBlank String metadata, HttpServletResponse response, HttpSession session) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter pw = response.getWriter();
+        User user = sessionService.getUserOfSession(session);
+
+        SendImageGroupChatMessagePostBody postBody = JsonUtil.toObject(metadata, SendImageGroupChatMessagePostBody.class);
+
+        Set<ConstraintViolation<SendImageGroupChatMessagePostBody>> violations = validator.validate(postBody);
+        if (!violations.isEmpty()) {
+            String errorMessage = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", "));
+            pw.print(JsonUtil.toJson(new OperationData(-101, errorMessage)));
+            pw.close();
+            return;
+        }
+
+        if(!groupChannelService.isInGroup(postBody.getToGroupChannelId(), user.getImessageId())){
+            pw.print(JsonUtil.toJson(new OperationData(-102, "未建立关系")));
+            pw.close();
+            return;
+        }
+
+        String uuid = UUID.randomUUID().toString();
+        GroupChatMessage groupChatMessage  = GroupChatMessage.newImage(uuid, user.getImessageId(),
+                postBody.getToGroupChannelId(), new Date(), postBody.getImageFileName(), uuid);
+        groupChatService.sendGroupChatMessageStep1(groupChatMessage, image.getBytes());
+        try {
+            pw.print(JsonUtil.toJson(OperationData.success(groupChatMessage)));
+            pw.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            groupChatService.deleteGroupChatMessage(groupChatMessage.getTo(), groupChatMessage.getUuid());
+            pw.print(JsonUtil.toJson(OperationData.failure()));
+            pw.close();
+            return;
+        }
+
+        groupChatService.sendGroupChatMessageStep2(groupChatMessage, image.getBytes());
+    }
+
+    @GetMapping("message/image/new/{imageId}")
+    public ResponseEntity<byte[]> getNewMessageImage(@PathVariable("imageId") String imageId){
+        Object[] objects = groupChatService.getNewGroupChatMessageImage(imageId);
+        byte[] chatMessageImage = (byte[]) objects[0];
+        String chatMessageImageFileName = (String) objects[2];
+        if(chatMessageImage == null) {
+            String errorMessage = "{\"error\": \"Chat message image not found.\"}";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).headers(headers).body(errorMessage.getBytes());
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", chatMessageImageFileName);
+        headers.setContentLength(chatMessageImage.length);
+        return new ResponseEntity<>(chatMessageImage, headers, HttpStatus.OK);
     }
 }

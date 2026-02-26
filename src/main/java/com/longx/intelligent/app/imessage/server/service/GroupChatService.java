@@ -1,5 +1,6 @@
 package com.longx.intelligent.app.imessage.server.service;
 
+import com.longx.intelligent.app.imessage.server.data.ChatMessage;
 import com.longx.intelligent.app.imessage.server.data.GroupChatMessage;
 import com.longx.intelligent.app.imessage.server.data.GroupMessageViewed;
 import com.longx.intelligent.app.imessage.server.mapper.GroupChatMapper;
@@ -99,12 +100,20 @@ public class GroupChatService {
         return allGroupChatMessage;
     }
 
+    public Object[] getNewGroupChatMessageImage(String imageId){
+        return redisOperationService.GROUP_CHAT.getGroupChatMessageImage(imageId);
+    }
+
     public GroupMessageViewed viewMessage(String messageUuid, String currentUserImessageId){
         return redisOperationService.GROUP_CHAT.viewMessage(messageUuid, currentUserImessageId);
     }
 
     public void viewAllMessage(String groupChannelId, String currentUserImessageId){
         redisOperationService.GROUP_CHAT.viewAllMessage(groupChannelId, currentUserImessageId);
+    }
+
+    public GroupChatMessage getGroupChatMessage(String to, String uuid){
+        return redisOperationService.GROUP_CHAT.getGroupChatMessage(to, uuid);
     }
 
     public GroupChatMessage findGroupChatMessage(String messageUuid){
