@@ -4,9 +4,7 @@ import com.longx.intelligent.app.imessage.server.data.ChatMessage;
 import com.longx.intelligent.app.imessage.server.data.GroupChatMessage;
 import com.longx.intelligent.app.imessage.server.data.GroupMessageViewed;
 import com.longx.intelligent.app.imessage.server.data.User;
-import com.longx.intelligent.app.imessage.server.data.request.SendImageChatMessagePostBody;
-import com.longx.intelligent.app.imessage.server.data.request.SendImageGroupChatMessagePostBody;
-import com.longx.intelligent.app.imessage.server.data.request.SendTextGroupChatMessagePostBody;
+import com.longx.intelligent.app.imessage.server.data.request.*;
 import com.longx.intelligent.app.imessage.server.data.response.OperationData;
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
 import com.longx.intelligent.app.imessage.server.exception.BadRequestException;
@@ -141,7 +139,7 @@ public class GroupChatController {
         byte[] chatMessageImage = (byte[]) objects[0];
         String chatMessageImageFileName = (String) objects[2];
         if(chatMessageImage == null) {
-            String errorMessage = "{\"error\": \"Chat message image not found.\"}";
+            String errorMessage = "{\"error\": \"Group chat message image not found.\"}";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).headers(headers).body(errorMessage.getBytes());
@@ -150,5 +148,64 @@ public class GroupChatController {
         headers.setContentDispositionFormData("attachment", chatMessageImageFileName);
         headers.setContentLength(chatMessageImage.length);
         return new ResponseEntity<>(chatMessageImage, headers, HttpStatus.OK);
+    }
+
+    @PostMapping("message/video/send")
+    public void sendVideoMessage(@RequestPart("video") @NotNull MultipartFile video, @RequestPart("metadata") @NotBlank String metadata, HttpServletResponse response, HttpSession session) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter pw = response.getWriter();
+        User user = sessionService.getUserOfSession(session);
+
+        SendVideoGroupChatMessagePostBody postBody = JsonUtil.toObject(metadata, SendVideoGroupChatMessagePostBody.class);
+
+        Set<ConstraintViolation<SendVideoGroupChatMessagePostBody>> violations = validator.validate(postBody);
+        if (!violations.isEmpty()) {
+            String errorMessage = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", "));
+            pw.print(JsonUtil.toJson(new OperationData(-101, errorMessage)));
+            pw.close();
+            return;
+        }
+
+        if(!groupChannelService.isInGroup(postBody.getToGroupChannelId(), user.getImessageId())){
+            pw.print(JsonUtil.toJson(new OperationData(-102, "未建立关系")));
+            pw.close();
+            return;
+        }
+
+        String uuid = UUID.randomUUID().toString();
+        GroupChatMessage groupChatMessage  = GroupChatMessage.newVideo(uuid, user.getImessageId(),
+                postBody.getToGroupChannelId(), new Date(), postBody.getVideoFileName(), uuid);
+        groupChatService.sendGroupChatMessageStep1(groupChatMessage, video.getBytes());
+        try {
+            pw.print(JsonUtil.toJson(OperationData.success(groupChatMessage)));
+            pw.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            groupChatService.deleteGroupChatMessage(groupChatMessage.getTo(), groupChatMessage.getUuid());
+            pw.print(JsonUtil.toJson(OperationData.failure()));
+            pw.close();
+            return;
+        }
+
+        groupChatService.sendGroupChatMessageStep2(groupChatMessage, video.getBytes());
+    }
+
+    @GetMapping("message/video/new/{videoId}")
+    public ResponseEntity<byte[]> getNewChatMessageVideo(@PathVariable("videoId") String videoId){
+        Object[] objects = groupChatService.getNewGroupChatMessageVideo(videoId);
+        byte[] chatMessageVideo = (byte[]) objects[0];
+        String chatMessageVideoFileName = (String) objects[2];
+        if(chatMessageVideo == null) {
+            String errorMessage = "{\"error\": \"Group chat message video not found.\"}";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).headers(headers).body(errorMessage.getBytes());
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", chatMessageVideoFileName);
+        headers.setContentLength(chatMessageVideo.length);
+        return new ResponseEntity<>(chatMessageVideo, headers, HttpStatus.OK);
     }
 }
