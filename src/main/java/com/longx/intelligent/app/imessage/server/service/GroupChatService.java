@@ -108,6 +108,10 @@ public class GroupChatService {
         return redisOperationService.GROUP_CHAT.getGroupChatMessageVideo(videoId);
     }
 
+    public Object[] getNewGroupChatMessageFile(String fileId){
+        return redisOperationService.GROUP_CHAT.getGroupChatMessageFile(fileId);
+    }
+
     public GroupMessageViewed viewMessage(String messageUuid, String currentUserImessageId){
         return redisOperationService.GROUP_CHAT.viewMessage(messageUuid, currentUserImessageId);
     }

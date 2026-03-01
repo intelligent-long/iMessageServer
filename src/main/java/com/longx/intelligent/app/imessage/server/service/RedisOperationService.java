@@ -848,14 +848,20 @@ public class RedisOperationService {
             String imageFileName = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageImageHashKey.IMAGE_FILE_NAME);
             return new Object[]{image, imageIdRedis, imageFileName};
         }
-
-
         public Object[] getGroupChatMessageVideo(String videoId){
             String key = RedisKeys.GroupChat.getGroupChatMessageVideo(videoId);
             byte[] video = Base64Util.decodeFromString((String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageVideoHashKey.VIDEO));
             String videoIdRedis = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageVideoHashKey.VIDEO_ID);
             String videoFileName = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageVideoHashKey.VIDEO_FILE_NAME);
             return new Object[]{video, videoIdRedis, videoFileName};
+        }
+
+        public Object[] getGroupChatMessageFile(String fileId){
+            String key = RedisKeys.GroupChat.getGroupChatMessageFile(fileId);
+            byte[] file = Base64Util.decodeFromString((String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageFileHashKey.FILE));
+            String fileIdRedis = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageFileHashKey.FILE_ID);
+            String fileName = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageFileHashKey.FILE_FILE_NAME);
+            return new Object[]{file, fileIdRedis, fileName};
         }
     }
 

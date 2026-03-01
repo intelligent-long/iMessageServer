@@ -208,4 +208,63 @@ public class GroupChatController {
         headers.setContentLength(chatMessageVideo.length);
         return new ResponseEntity<>(chatMessageVideo, headers, HttpStatus.OK);
     }
+
+    @PostMapping("message/file/send")
+    public void sendFileMessage(@RequestPart("file") @NotNull MultipartFile file, @RequestPart("metadata") @NotBlank String metadata, HttpServletResponse response, HttpSession session) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter pw = response.getWriter();
+        User user = sessionService.getUserOfSession(session);
+
+        SendFileGroupChatMessagePostBody postBody = JsonUtil.toObject(metadata, SendFileGroupChatMessagePostBody.class);
+
+        Set<ConstraintViolation<SendFileGroupChatMessagePostBody>> violations = validator.validate(postBody);
+        if (!violations.isEmpty()) {
+            String errorMessage = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", "));
+            pw.print(JsonUtil.toJson(new OperationData(-101, errorMessage)));
+            pw.close();
+            return;
+        }
+
+        if(!groupChannelService.isInGroup(postBody.getToGroupChannelId(), user.getImessageId())){
+            pw.print(JsonUtil.toJson(new OperationData(-102, "未建立关系")));
+            pw.close();
+            return;
+        }
+
+        String uuid = UUID.randomUUID().toString();
+        GroupChatMessage groupChatMessage  = GroupChatMessage.newFile(uuid, user.getImessageId(),
+                postBody.getToGroupChannelId(), new Date(), postBody.getFileName(), uuid);
+        groupChatService.sendGroupChatMessageStep1(groupChatMessage, file.getBytes());
+        try {
+            pw.print(JsonUtil.toJson(OperationData.success(groupChatMessage)));
+            pw.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            groupChatService.deleteGroupChatMessage(groupChatMessage.getTo(), groupChatMessage.getUuid());
+            pw.print(JsonUtil.toJson(OperationData.failure()));
+            pw.close();
+            return;
+        }
+
+        groupChatService.sendGroupChatMessageStep2(groupChatMessage, file.getBytes());
+    }
+
+    @GetMapping("message/file/new/{fileId}")
+    public ResponseEntity<byte[]> getNewChatMessageFile(@PathVariable("fileId") String fileId){
+        Object[] objects = groupChatService.getNewGroupChatMessageFile(fileId);
+        byte[] chatMessageFile = (byte[]) objects[0];
+        String chatMessageFileFileName = (String) objects[2];
+        if(chatMessageFile == null) {
+            String errorMessage = "{\"error\": \"Chat message image not found.\"}";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).headers(headers).body(errorMessage.getBytes());
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentDispositionFormData("attachment", chatMessageFileFileName);
+        headers.setContentLength(chatMessageFile.length);
+        return new ResponseEntity<>(chatMessageFile, headers, HttpStatus.OK);
+    }
 }
