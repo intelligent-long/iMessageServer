@@ -22,8 +22,8 @@ public class LogUi {
     public static LogUi getIfExists() {
         return INSTANCE_CREATED ? InstanceHolder.INSTANCE : null;
     }
-    private static final int MAIN_UI_WIDTH = 950;
-    private static final int MAIN_UI_HEIGHT = 590;
+    private static final int MAIN_UI_WIDTH = 1000;
+    private static final int MAIN_UI_HEIGHT = 600;
     private final JFrame frame;
     private JPanel rootPane;
     private JTextArea logArea;

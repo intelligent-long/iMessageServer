@@ -8,9 +8,7 @@ import com.longx.intelligent.app.imessage.server.data.request.TransferGroupChann
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
 import com.longx.intelligent.app.imessage.server.service.ChannelService;
 import com.longx.intelligent.app.imessage.server.service.GroupChannelService;
-import com.longx.intelligent.app.imessage.server.service.RedisOperationService;
 import com.longx.intelligent.app.imessage.server.service.SessionService;
-import com.longx.intelligent.app.imessage.server.util.ErrorLogger;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;

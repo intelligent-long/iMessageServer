@@ -2,6 +2,7 @@ package com.longx.intelligent.app.imessage.server.security;
 
 import com.longx.intelligent.app.imessage.server.data.User;
 import com.longx.intelligent.app.imessage.server.service.SessionService;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,7 +56,7 @@ public class SecurityFilter implements Filter {
     private void sendAccessDenied(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String url = request.getRequestURL().toString();
         String sessionId = request.getSession().getId();
-        System.err.println("Access Denied > URL: " + url + ", Session ID: " + sessionId);
+        Logger.err("Access Denied > URL: " + url + ", Session ID: " + sessionId);
         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
     }
 }

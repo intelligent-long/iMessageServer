@@ -1,5 +1,6 @@
 package com.longx.intelligent.app.imessage.server.handler;
 
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,6 @@ public class ShutdownLogger {
 
     @PreDestroy
     public void onShutdown() {
-        System.out.println("Spring 已完成所有资源释放");
+        Logger.info("Spring 已完成所有资源释放");
     }
 }

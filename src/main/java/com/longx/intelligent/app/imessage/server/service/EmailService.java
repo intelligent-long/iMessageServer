@@ -1,5 +1,6 @@
 package com.longx.intelligent.app.imessage.server.service;
 
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import com.longx.intelligent.app.imessage.server.value.RedisKeys;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
@@ -39,7 +40,7 @@ public class EmailService {
             javaMailSender.send(message);
             return true;
         }catch (Exception e){
-            System.err.println("邮件发送失败 ->");
+            Logger.err("邮件发送失败 ->");
             e.printStackTrace();
             return false;
         }

@@ -5,7 +5,7 @@ import com.longx.intelligent.app.imessage.server.data.request.*;
 import com.longx.intelligent.app.imessage.server.data.response.OperationData;
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
 import com.longx.intelligent.app.imessage.server.service.*;
-import com.longx.intelligent.app.imessage.server.util.ErrorLogger;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import com.longx.intelligent.app.imessage.server.util.TimeUtil;
 import com.longx.intelligent.app.imessage.server.value.Constants;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
@@ -76,7 +76,7 @@ public class GroupChannelController {
             }
         }
         if(groupChannel == null) return new OperationData(-101, "无内容");
-        System.err.println(groupChannel);
+        Logger.err(groupChannel);
         return OperationData.success(groupChannel);
     }
 
@@ -883,7 +883,7 @@ public class GroupChannelController {
                 }
             }
         }catch (Exception e){
-            ErrorLogger.log(e);
+            Logger.err(e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new OperationStatus(-103, "更新顺序失败");
         }

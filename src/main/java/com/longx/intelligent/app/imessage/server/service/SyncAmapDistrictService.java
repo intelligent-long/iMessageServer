@@ -3,6 +3,7 @@ package com.longx.intelligent.app.imessage.server.service;
 import com.longx.intelligent.app.imessage.server.data.AmapApiDistrictResponse;
 import com.longx.intelligent.app.imessage.server.data.AmapDistrict;
 import com.longx.intelligent.app.imessage.server.mapper.AmapDistrictMapper;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -26,7 +27,7 @@ public class SyncAmapDistrictService {
     @Scheduled(cron = "0 0 2 1 * ?")
     @Transactional
     public void sync(){
-        System.out.println("开始更新地区数据库...");
+        Logger.info("开始更新地区数据库...");
 
         clearAll();
 

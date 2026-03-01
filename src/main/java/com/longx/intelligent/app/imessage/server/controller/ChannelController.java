@@ -5,7 +5,7 @@ import com.longx.intelligent.app.imessage.server.data.request.*;
 import com.longx.intelligent.app.imessage.server.data.response.OperationData;
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
 import com.longx.intelligent.app.imessage.server.service.*;
-import com.longx.intelligent.app.imessage.server.util.ErrorLogger;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -536,7 +536,7 @@ public class ChannelController {
                 }
             }
         }catch (Exception e){
-            ErrorLogger.log(e);
+            Logger.err(e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return new OperationStatus(-103, "更新顺序失败");
         }

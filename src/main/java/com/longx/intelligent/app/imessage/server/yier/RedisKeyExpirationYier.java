@@ -3,6 +3,7 @@ package com.longx.intelligent.app.imessage.server.yier;
 import com.longx.intelligent.app.imessage.server.data.ChatMessage;
 import com.longx.intelligent.app.imessage.server.service.ChatService;
 import com.longx.intelligent.app.imessage.server.service.RedisOperationService;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import com.longx.intelligent.app.imessage.server.value.StompDestinations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.Message;
@@ -33,7 +34,7 @@ public class RedisKeyExpirationYier extends KeyExpirationEventMessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         String expiredKey = message.toString();
-        System.out.println("过期的 Redis Key: " + expiredKey);
+        Logger.info("过期的 Redis Key: " + expiredKey);
 
         if (expiredKey.startsWith("chat_message:")) {
             String[] split = expiredKey.split(":");

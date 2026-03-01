@@ -1,5 +1,6 @@
 package com.longx.intelligent.app.imessage.server.service;
 
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,7 @@ public class VerifyCodeService {
         redisOperationService.VERIFY_CODE.enterVerifyCodeValidityPeriod(email, verifyCode);
         boolean success = emailService.sendVerificationCodeEmail(email, verifyCode);
         if(success){
-            System.out.println("发送了一个新的验证码 > " + "email: " + email + ", code: " + verifyCode);
+            Logger.info("发送了一个新的验证码 > " + "email: " + email + ", code: " + verifyCode);
             return true;
         }else {
             finish(email);
@@ -43,16 +44,16 @@ public class VerifyCodeService {
 
     public VerifyResult verify(String email, String verifyCode){
         if(redisOperationService.VERIFY_CODE.checkMaxVerifyFailureTimesReached(email)){
-            System.out.println("新的验证码验证，次数过多 > " + "email: " + email + ", code: " + verifyCode);
+            Logger.info("新的验证码验证，次数过多 > " + "email: " + email + ", code: " + verifyCode);
             return VerifyResult.TRY_LATER;
         }
         if(redisOperationService.VERIFY_CODE.checkVerifyCodeCorrect(email, verifyCode)){
-            System.out.println("新的验证码验证，正确 > " + "email: " + email + ", code: " + verifyCode);
+            Logger.info("新的验证码验证，正确 > " + "email: " + email + ", code: " + verifyCode);
             finish(email);
             return VerifyResult.CORRECT;
         }else {
             redisOperationService.VERIFY_CODE.incrementVerifyCodeFailureTimes(email);
-            System.out.println("新的验证码验证，错误 > " + "email: " + email + ", code: " + verifyCode);
+            Logger.info("新的验证码验证，错误 > " + "email: " + email + ", code: " + verifyCode);
             return VerifyResult.INCORRECT;
         }
     }

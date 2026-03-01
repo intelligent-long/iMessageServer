@@ -112,6 +112,10 @@ public class GroupChatService {
         return redisOperationService.GROUP_CHAT.getGroupChatMessageFile(fileId);
     }
 
+    public Object[] getNewChatMessageVoice(String voiceId){
+        return redisOperationService.GROUP_CHAT.getGroupChatMessageVoice(voiceId);
+    }
+
     public GroupMessageViewed viewMessage(String messageUuid, String currentUserImessageId){
         return redisOperationService.GROUP_CHAT.viewMessage(messageUuid, currentUserImessageId);
     }

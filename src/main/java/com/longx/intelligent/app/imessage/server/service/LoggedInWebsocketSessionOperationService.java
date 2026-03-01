@@ -1,5 +1,6 @@
 package com.longx.intelligent.app.imessage.server.service;
 
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import com.longx.intelligent.app.imessage.server.value.WebsocketValues;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,17 +63,17 @@ public class LoggedInWebsocketSessionOperationService {
     }
 
     public void serverActiveClose(WebSocketSession webSocketSession) throws IOException {
-        System.out.println("服务器主动关闭 Websocket Session > Code: " + WebsocketValues.WEBSOCKET_CLOSE_CODE_SERVER_ACTIVE_CLOSE + ", Reason: " + WebsocketValues.WEBSOCKET_CLOSE_REASON_SERVER_ACTIVE_CLOSE);
+        Logger.info("服务器主动关闭 Websocket Session > Code: " + WebsocketValues.WEBSOCKET_CLOSE_CODE_SERVER_ACTIVE_CLOSE + ", Reason: " + WebsocketValues.WEBSOCKET_CLOSE_REASON_SERVER_ACTIVE_CLOSE);
         webSocketSession.close(new CloseStatus(WebsocketValues.WEBSOCKET_CLOSE_CODE_SERVER_ACTIVE_CLOSE, WebsocketValues.WEBSOCKET_CLOSE_REASON_SERVER_ACTIVE_CLOSE));
     }
 
     public void closeForForceClientUpdate(WebSocketSession webSocketSession) throws IOException {
-        System.out.println("服务器主动关闭 Websocket Session > Code: " + WebsocketValues.WEBSOCKET_CLOSE_CODE_CLOSE_FOR_CLIENT_NEED_UPDATE + ", Reason: " + WebsocketValues.WEBSOCKET_CLOSE_REASON_CLOSE_FOR_CLIENT_NEED_UPDATE);
+        Logger.info("服务器主动关闭 Websocket Session > Code: " + WebsocketValues.WEBSOCKET_CLOSE_CODE_CLOSE_FOR_CLIENT_NEED_UPDATE + ", Reason: " + WebsocketValues.WEBSOCKET_CLOSE_REASON_CLOSE_FOR_CLIENT_NEED_UPDATE);
         webSocketSession.close(new CloseStatus(WebsocketValues.WEBSOCKET_CLOSE_CODE_CLOSE_FOR_CLIENT_NEED_UPDATE, WebsocketValues.WEBSOCKET_CLOSE_REASON_CLOSE_FOR_CLIENT_NEED_UPDATE));
     }
 
     public void closeForForceClientUpdateHigher(WebSocketSession webSocketSession) throws IOException {
-        System.out.println("服务器主动关闭 Websocket Session > Code: " + WebsocketValues.WEBSOCKET_CLOSE_CODE_CLOSE_FOR_CLIENT_VERSION_HIGHER + ", Reason: " + WebsocketValues.WEBSOCKET_CLOSE_REASON_CLOSE_FOR_CLIENT_VERSION_HIGHER);
+        Logger.info("服务器主动关闭 Websocket Session > Code: " + WebsocketValues.WEBSOCKET_CLOSE_CODE_CLOSE_FOR_CLIENT_VERSION_HIGHER + ", Reason: " + WebsocketValues.WEBSOCKET_CLOSE_REASON_CLOSE_FOR_CLIENT_VERSION_HIGHER);
         webSocketSession.close(new CloseStatus(WebsocketValues.WEBSOCKET_CLOSE_CODE_CLOSE_FOR_CLIENT_VERSION_HIGHER, WebsocketValues.WEBSOCKET_CLOSE_REASON_CLOSE_FOR_CLIENT_VERSION_HIGHER));
     }
 

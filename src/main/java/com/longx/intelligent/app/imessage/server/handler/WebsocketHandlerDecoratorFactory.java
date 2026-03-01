@@ -2,6 +2,7 @@ package com.longx.intelligent.app.imessage.server.handler;
 
 import com.longx.intelligent.app.imessage.server.config.ImessageConfig;
 import com.longx.intelligent.app.imessage.server.service.LoggedInWebsocketSessionOperationService;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,7 @@ public class WebsocketHandlerDecoratorFactory implements WebSocketHandlerDecorat
                 List<String> clientVersions = handshakeHeaders.get("Client-Version");
                 if(clientVersions == null){
                     loggedInWebsocketSessionOperationService.closeForForceClientUpdate(webSocketSession);
-                    System.out.println("关闭了一个客户端需要升级的 Websocket 新连接");
+                    Logger.info("关闭了一个客户端需要升级的 Websocket 新连接");
                     return;
                 }else {
                     try {
@@ -41,17 +42,17 @@ public class WebsocketHandlerDecoratorFactory implements WebSocketHandlerDecorat
                         int currentClientVersion = imessageConfig.getCurrentClientVersion();
                         if(clientVersion < lowestAllowClientVersion){
                             loggedInWebsocketSessionOperationService.closeForForceClientUpdate(webSocketSession);
-                            System.out.println("关闭了一个客户端需要升级的 Websocket 新连接");
+                            Logger.info("关闭了一个客户端需要升级的 Websocket 新连接");
                             return;
                         }
                         if(clientVersion > currentClientVersion){
                             loggedInWebsocketSessionOperationService.closeForForceClientUpdateHigher(webSocketSession);
-                            System.out.println("关闭了一个客户端版本过高的 Websocket 新连接");
+                            Logger.info("关闭了一个客户端版本过高的 Websocket 新连接");
                             return;
                         }
                     }catch (Exception e){
                         loggedInWebsocketSessionOperationService.closeForForceClientUpdate(webSocketSession);
-                        System.out.println("关闭了一个客户端需要升级的 Websocket 新连接");
+                        Logger.info("关闭了一个客户端需要升级的 Websocket 新连接");
                         return;
                     }
                 }
@@ -62,11 +63,11 @@ public class WebsocketHandlerDecoratorFactory implements WebSocketHandlerDecorat
                     loggedInWebsocketSessionOperationService.closeAllWebsocketSessionOfUser(imessageId);
                     //登陆后的websocket连接，hold websocket session
                     loggedInWebsocketSessionOperationService.holdWebsocketSession(imessageId, webSocketSession);
-                    System.out.println("持有了一个新的 Websocket 连接会话");
+                    Logger.info("持有了一个新的 Websocket 连接会话");
                 }else {
                     //未登陆的websocket连接一律关掉
                     loggedInWebsocketSessionOperationService.serverActiveClose(webSocketSession);
-                    System.out.println("关闭了一个未登陆的 Websocket 新连接");
+                    Logger.info("关闭了一个未登陆的 Websocket 新连接");
                 }
                 super.afterConnectionEstablished(webSocketSession);
             }

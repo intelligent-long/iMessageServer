@@ -863,6 +863,13 @@ public class RedisOperationService {
             String fileName = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageFileHashKey.FILE_FILE_NAME);
             return new Object[]{file, fileIdRedis, fileName};
         }
+
+        public Object[] getGroupChatMessageVoice(String voiceId){
+            String key = RedisKeys.GroupChat.getGroupChatMessageVoice(voiceId);
+            byte[] voice = Base64Util.decodeFromString((String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageVoiceHashKey.VOICE));
+            String voiceIdRedis = (String) redisOperator.hGet(key, RedisKeys.GroupChat.GroupChatMessageVoiceHashKey.VOICE_ID);
+            return new Object[]{voice, voiceIdRedis};
+        }
     }
 
     public class Broadcast{

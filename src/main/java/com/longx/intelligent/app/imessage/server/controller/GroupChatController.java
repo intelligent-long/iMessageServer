@@ -1,9 +1,6 @@
 package com.longx.intelligent.app.imessage.server.controller;
 
-import com.longx.intelligent.app.imessage.server.data.ChatMessage;
-import com.longx.intelligent.app.imessage.server.data.GroupChatMessage;
-import com.longx.intelligent.app.imessage.server.data.GroupMessageViewed;
-import com.longx.intelligent.app.imessage.server.data.User;
+import com.longx.intelligent.app.imessage.server.data.*;
 import com.longx.intelligent.app.imessage.server.data.request.*;
 import com.longx.intelligent.app.imessage.server.data.response.OperationData;
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
@@ -11,7 +8,9 @@ import com.longx.intelligent.app.imessage.server.exception.BadRequestException;
 import com.longx.intelligent.app.imessage.server.service.GroupChannelService;
 import com.longx.intelligent.app.imessage.server.service.GroupChatService;
 import com.longx.intelligent.app.imessage.server.service.SessionService;
+import com.longx.intelligent.app.imessage.server.util.AudioUtil;
 import com.longx.intelligent.app.imessage.server.util.JsonUtil;
+import com.longx.intelligent.app.imessage.server.value.Constants;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.ConstraintViolation;
@@ -266,5 +265,68 @@ public class GroupChatController {
         headers.setContentDispositionFormData("attachment", chatMessageFileFileName);
         headers.setContentLength(chatMessageFile.length);
         return new ResponseEntity<>(chatMessageFile, headers, HttpStatus.OK);
+    }
+
+    @PostMapping("message/voice/send")
+    public void sendVoiceMessage(@RequestPart("voice") @NotNull MultipartFile voice, @RequestPart("metadata") @NotBlank String metadata, HttpServletResponse response, HttpSession session) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter pw = response.getWriter();
+        User user = sessionService.getUserOfSession(session);
+
+        SendVoiceGroupChatMessagePostBody postBody = JsonUtil.toObject(metadata, SendVoiceGroupChatMessagePostBody.class);
+
+        Set<ConstraintViolation<SendVoiceGroupChatMessagePostBody>> violations = validator.validate(postBody);
+        if (!violations.isEmpty()) {
+            String errorMessage = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", "));
+            pw.print(JsonUtil.toJson(new OperationData(-101, errorMessage)));
+            pw.close();
+            return;
+        }
+
+        if(!groupChannelService.isInGroup(postBody.getToGroupChannelId(), user.getImessageId())){
+            pw.print(JsonUtil.toJson(new OperationData(-102, "未建立关系")));
+            pw.close();
+            return;
+        }
+
+        long audioDurationSec = AudioUtil.getAudioDurationSec(voice.getBytes());
+        if(audioDurationSec == -1 || audioDurationSec > Constants.MAX_ALLOW_CHAT_VOICE_DURATION_SEC){
+            pw.print(JsonUtil.toJson(new OperationData(-103, "语音不合法")));
+            pw.close();
+            return;
+        }
+
+        String uuid = UUID.randomUUID().toString();
+        GroupChatMessage groupChatMessage = GroupChatMessage.newVoice(uuid, user.getImessageId(), postBody.getToGroupChannelId(), new Date(), uuid);
+        groupChatService.sendGroupChatMessageStep1(groupChatMessage, voice.getBytes());
+        try {
+            pw.print(JsonUtil.toJson(OperationData.success(groupChatMessage)));
+            pw.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            groupChatService.deleteGroupChatMessage(groupChatMessage.getTo(), groupChatMessage.getUuid());
+            pw.print(JsonUtil.toJson(OperationData.failure()));
+            pw.close();
+            return;
+        }
+
+        groupChatService.sendGroupChatMessageStep2(groupChatMessage, voice.getBytes());
+    }
+
+    @GetMapping("message/voice/new/{voiceId}")
+    public ResponseEntity<byte[]> getNewChatMessageVoice(@PathVariable("voiceId") String voiceId){
+        Object[] objects = groupChatService.getNewChatMessageVoice(voiceId);
+        byte[] chatMessageVoice = (byte[]) objects[0];
+        if(chatMessageVoice == null) {
+            String errorMessage = "{\"error\": \"Chat message video not found.\"}";
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).headers(headers).body(errorMessage.getBytes());
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(chatMessageVoice.length);
+        return new ResponseEntity<>(chatMessageVoice, headers, HttpStatus.OK);
     }
 }

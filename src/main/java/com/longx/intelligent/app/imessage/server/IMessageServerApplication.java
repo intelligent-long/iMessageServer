@@ -7,6 +7,7 @@ import com.longx.intelligent.app.imessage.server.context.SpringContextHolder;
 import com.longx.intelligent.app.imessage.server.ui.LaunchUi;
 import com.longx.intelligent.app.imessage.server.ui.LogUi;
 import com.longx.intelligent.app.imessage.server.util.JsonUtil;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -51,7 +52,7 @@ public class IMessageServerApplication {
                     .run(args);
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("配置文件加载失败: " + configFile);
+            Logger.err("配置文件加载失败: " + configFile);
         }
     }
 

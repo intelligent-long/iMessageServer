@@ -2,6 +2,7 @@ package com.longx.intelligent.app.imessage.server.service;
 
 import com.longx.intelligent.app.imessage.server.data.OfflineDetail;
 import com.longx.intelligent.app.imessage.server.data.User;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import com.longx.intelligent.app.imessage.server.value.Constants;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class AuthService {
         User user = new User(imessageId, imessageId, email, password, new Date(), username, null, null, null, null, null);
         boolean inserted = userService.insertUser(user);
         if(!inserted) return null;
-        System.out.println("创建了一个新用户 > " + "email: " + email + ", imessageId: " + imessageId);
+        Logger.info("创建了一个新用户 > " + "email: " + email + ", imessageId: " + imessageId);
         return imessageId;
     }
 
@@ -51,7 +52,7 @@ public class AuthService {
         redisOperationService.AUTH.removeLoginFailureTimes(user.getImessageId());
         //将用户放入Session，登陆成功
         sessionService.setUserToSession(session, user);
-        System.out.println("登陆成功 > " + "iMessage ID: " + user.getImessageId() + ", Email: " + user.getEmail());
+        Logger.info("登陆成功 > " + "iMessage ID: " + user.getImessageId() + ", Email: " + user.getEmail());
     }
 
     private void forceMakeOfflineForLoggedIn(User user, OfflineDetail offlineDetail){
@@ -69,7 +70,7 @@ public class AuthService {
             redisOperationService.AUTH.recordOfflineDetail(sessionId, offlineDetail);
         });
         allSessionIdOfUser.forEach(sessionId -> {
-            System.out.println("主动下线了一个会话 > " +
+            Logger.info("主动下线了一个会话 > " +
                     "Session ID: " + sessionId + ", " +
                     "iMessage ID: " + user.getImessageId() + ", " +
                     "iMessage ID User: " + user.getImessageIdUser() + ", " +

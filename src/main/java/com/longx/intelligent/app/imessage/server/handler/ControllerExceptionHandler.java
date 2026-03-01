@@ -3,6 +3,7 @@ package com.longx.intelligent.app.imessage.server.handler;
 import com.longx.intelligent.app.imessage.server.aspect.SessionCheckAspect;
 import com.longx.intelligent.app.imessage.server.data.response.OperationStatus;
 import com.longx.intelligent.app.imessage.server.exception.BadRequestException;
+import com.longx.intelligent.app.imessage.server.util.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -21,14 +22,14 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<OperationStatus> handleValidationExceptions(MethodArgumentNotValidException e, Errors errors){
-        System.err.println("方法参数不合法 > " + e.getMessage());
+        Logger.err("方法参数不合法 > " + e.getMessage());
         OperationStatus operationStatus = OperationStatus.buildValidationErrorInstance(errors, VALIDATION_FAILURE_OPERATION_STATUS_CODE);
         return new ResponseEntity<>(operationStatus, HttpStatus.OK);
     }
 
     @ExceptionHandler(SessionCheckAspect.UserNotLoggedInException.class)
     public ResponseEntity<String> handleIllegalStateException(IllegalStateException e) {
-        System.err.println("用户未登录 > " + e.getMessage());
+        Logger.err("用户未登录 > " + e.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
     }
 

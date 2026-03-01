@@ -25,9 +25,9 @@ public class RedisSettingRunner implements CommandLineRunner {
 
         if (notifyOptions == null || !notifyOptions.contains("E") || !notifyOptions.contains("x")) {
             connection.setConfig("notify-keyspace-events", "Ex");
-//            System.out.println("已设置 notify-keyspace-events 为 Ex");
+//            Logger.info("已设置 notify-keyspace-events 为 Ex");
         } else {
-//            System.out.println("当前 notify-keyspace-events: " + notifyOptions);
+//            Logger.info("当前 notify-keyspace-events: " + notifyOptions);
         }
     }
 }
