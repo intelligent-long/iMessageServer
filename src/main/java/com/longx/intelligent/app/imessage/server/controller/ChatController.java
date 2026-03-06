@@ -341,13 +341,13 @@ public class ChatController {
         return new ResponseEntity<>(chatMessageVoice, headers, HttpStatus.OK);
     }
 
-    @PostMapping("message/unsend/{receiver}/{chatMessageUuid}")
-    public void unsendMessage(@PathVariable("receiver") String receiver, @PathVariable("chatMessageUuid") String chatMessageUuid, HttpServletResponse response, HttpSession session) throws IOException {
+    @PostMapping("message/unsend/{receiver}/{messageUuid}")
+    public void unsendMessage(@PathVariable("receiver") String receiver, @PathVariable("messageUuid") String messageUuid, HttpServletResponse response, HttpSession session) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         PrintWriter pw = response.getWriter();
         User user = sessionService.getUserOfSession(session);
 
-        ChatMessage chatMessageFound = chatService.findChatMessage(receiver, chatMessageUuid);
+        ChatMessage chatMessageFound = chatService.findChatMessage(receiver, messageUuid);
         if(chatMessageFound == null){
             pw.print(JsonUtil.toJson(OperationData.failure()));
             pw.close();
@@ -378,7 +378,7 @@ public class ChatController {
             return;
         }
 
-        chatService.deleteChatMessage(receiver, user.getImessageId(), chatMessageUuid);
+        chatService.deleteChatMessage(receiver, user.getImessageId(), messageUuid);
         chatService.sendChatMessageStep2(unsendChatMessage, null);
     }
 }

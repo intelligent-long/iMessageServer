@@ -10,6 +10,7 @@ import com.longx.intelligent.app.imessage.server.service.GroupChatService;
 import com.longx.intelligent.app.imessage.server.service.SessionService;
 import com.longx.intelligent.app.imessage.server.util.AudioUtil;
 import com.longx.intelligent.app.imessage.server.util.JsonUtil;
+import com.longx.intelligent.app.imessage.server.util.TimeUtil;
 import com.longx.intelligent.app.imessage.server.value.Constants;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -328,5 +329,47 @@ public class GroupChatController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(chatMessageVoice.length);
         return new ResponseEntity<>(chatMessageVoice, headers, HttpStatus.OK);
+    }
+
+
+    @PostMapping("message/unsend/{receiver}/{messageUuid}")
+    public void unsendMessage(@PathVariable("receiver") String receiver, @PathVariable("messageUuid") String messageUuid, HttpServletResponse response, HttpSession session) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        PrintWriter pw = response.getWriter();
+        User user = sessionService.getUserOfSession(session);
+
+        GroupChatMessage groupChatMessageFound = groupChatService.findGroupChatMessage(messageUuid);
+        if(groupChatMessageFound == null){
+            pw.print(JsonUtil.toJson(OperationData.failure()));
+            pw.close();
+            return;
+        }
+        if(!groupChatMessageFound.getFrom().equals(user.getImessageId())){
+            pw.print(JsonUtil.toJson(new OperationData(-101, "不是自己发送的消息")));
+            pw.close();
+            return;
+        }
+        if(TimeUtil.isDateAfter(groupChatMessageFound.getTime().getTime(), new Date().getTime(), Constants.MAX_ALLOW_UNSEND_MINUTES * 60 * 1000)){
+            pw.print(JsonUtil.toJson(new OperationData(-102, "只能在 " + Constants.MAX_ALLOW_UNSEND_MINUTES + " 分钟内撤回")));
+            pw.close();
+            return;
+        }
+
+        GroupChatMessage unsendChatMessage = GroupChatMessage.newUnsend(UUID.randomUUID().toString(), user.getImessageId(), groupChatMessageFound.getTo(), new Date(), groupChatMessageFound.getUuid());
+        groupChatService.sendGroupChatMessageStep1(unsendChatMessage, null);
+
+        try {
+            pw.print(JsonUtil.toJson(OperationData.success(unsendChatMessage)));
+            pw.close();
+        }catch (Exception e){
+            e.printStackTrace();
+            groupChatService.deleteGroupChatMessage(unsendChatMessage.getTo(), unsendChatMessage.getUuid());
+            pw.print(JsonUtil.toJson(OperationData.failure()));
+            pw.close();
+            return;
+        }
+
+        groupChatService.deleteGroupChatMessage(receiver, messageUuid);
+        groupChatService.sendGroupChatMessageStep2(unsendChatMessage, null);
     }
 }
