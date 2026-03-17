@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @PropertySource(value = "classpath:application.yml")
-@ConfigurationProperties(prefix = "imessage")
-public class ImessageConfig {
+@ConfigurationProperties(prefix = "apollo")
+public class ApolloConfig {
     private int lowestAllowClientVersion;
     private int currentClientVersion;
 

@@ -1,6 +1,6 @@
 package com.longx.intelligent.app.imessage.server.controller;
 
-import com.longx.intelligent.app.imessage.server.config.ImessageConfig;
+import com.longx.intelligent.app.imessage.server.config.ApolloConfig;
 import com.longx.intelligent.app.imessage.server.data.response.OperationData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("server_config")
 public class AppConfigController {
     @Autowired
-    private ImessageConfig imessageConfig;
+    private ApolloConfig apolloConfig;
 
     @GetMapping("current_client_version")
     public OperationData getCurrentClientVersionCode(){
-        int currentClientVersionCode = imessageConfig.getCurrentClientVersion();
+        int currentClientVersionCode = apolloConfig.getCurrentClientVersion();
         return OperationData.success(currentClientVersionCode);
     }
 

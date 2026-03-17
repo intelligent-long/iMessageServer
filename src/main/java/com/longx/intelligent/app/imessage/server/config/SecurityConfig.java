@@ -38,6 +38,8 @@ public class SecurityConfig {
                 .permitAll()
                 .antMatch("/region/**")
                 .permitAll()
+                .antMatch("/server_config/**")
+                .permitAll()
                 .antMatch("/**")
                 .authed();
         return new AccessEvaluator(accessPolicyMapper);

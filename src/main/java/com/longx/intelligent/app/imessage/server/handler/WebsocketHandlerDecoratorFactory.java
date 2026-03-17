@@ -1,6 +1,6 @@
 package com.longx.intelligent.app.imessage.server.handler;
 
-import com.longx.intelligent.app.imessage.server.config.ImessageConfig;
+import com.longx.intelligent.app.imessage.server.config.ApolloConfig;
 import com.longx.intelligent.app.imessage.server.service.LoggedInWebsocketSessionOperationService;
 import com.longx.intelligent.app.imessage.server.util.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class WebsocketHandlerDecoratorFactory implements WebSocketHandlerDecorat
     @Autowired
     private LoggedInWebsocketSessionOperationService loggedInWebsocketSessionOperationService;
     @Autowired
-    private ImessageConfig imessageConfig;
+    private ApolloConfig apolloConfig;
 
     @Override
     public WebSocketHandler decorate(WebSocketHandler handler) {
@@ -38,8 +38,8 @@ public class WebsocketHandlerDecoratorFactory implements WebSocketHandlerDecorat
                 }else {
                     try {
                         int clientVersion = Integer.parseInt(clientVersions.getFirst());
-                        int lowestAllowClientVersion = imessageConfig.getLowestAllowClientVersion();
-                        int currentClientVersion = imessageConfig.getCurrentClientVersion();
+                        int lowestAllowClientVersion = apolloConfig.getLowestAllowClientVersion();
+                        int currentClientVersion = apolloConfig.getCurrentClientVersion();
                         if(clientVersion < lowestAllowClientVersion){
                             loggedInWebsocketSessionOperationService.closeForForceClientUpdate(webSocketSession);
                             Logger.info("关闭了一个客户端需要升级的 Websocket 新连接");

@@ -48,7 +48,7 @@ public class IMessageServerApplication {
             props.forEach(System::setProperty);
             new SpringApplicationBuilder(IMessageServerApplication.class)
                     .profiles("cli")
-                    .properties(Map.of("spring.config.name", "gui-application"))
+                    .properties(Map.of("spring.config.name", "application"))
                     .run(args);
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,7 +65,7 @@ public class IMessageServerApplication {
             new Thread(() -> {
                 ConfigurableApplicationContext context =
                         new SpringApplicationBuilder(IMessageServerApplication.class)
-                                .properties(Map.of("spring.config.name", "gui-application"))
+                                .properties(Map.of("spring.config.name", "application"))
                                 .profiles("gui")
                                 .run(args);
                 SpringContextHolder.setContext(context);

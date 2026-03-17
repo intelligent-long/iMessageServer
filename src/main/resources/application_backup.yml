@@ -2,9 +2,16 @@ spring:
   application:
     name: iMessage Server
   datasource:
+    url: jdbc:mysql://localhost:3306/imessage?characterEncoding=utf8 #
+    username: root #
+    password: 138642347 #
     driver-class-name: com.mysql.cj.jdbc.Driver
   data:
     redis:
+      database: 0 #
+      host: localhost #
+      port: 6379 #
+      password: 138642347 #
   servlet:
     multipart:
       max-file-size: 1GB
@@ -13,11 +20,21 @@ spring:
     async:
       request-timeout: 60000
   mail:
+    host: smtp.qq.com #
+    port: 587 #
     protocol: smtp
-  lifecycle:
-    timeout-per-shutdown-phase: 120s
+    username: 909691944@qq.com #
+    password: tsbecwbnupzwbcef #
+    default-encoding: UTF-8 #
+    properties:
+      mail:
+        smtp:
+          auth: true #
+          starttls:
+            enable: true #
+            required: true #
 server:
-  shutdown: graceful
+  port: 8848 #
   servlet:
     session:
       cookie:
@@ -32,4 +49,5 @@ mybatis:
 imessage:
   lowest-allow-client-version: 1
   current-client-version: 1
+
 
