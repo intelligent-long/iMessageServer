@@ -674,8 +674,10 @@ public class RedisOperationService {
             }
             redisOperator.expireForHash(groupChatMessageRedisKey, Constants.CHAT_MESSAGE_EXPIRATION_TIME_DAY, TimeUnit.DAYS);
             String setKey = RedisKeys.GroupChat.getGroupChatMessagePendingChannels(groupChatMessage.getTo(), groupChatMessage.getUuid());
-            redisOperator.sAdd(setKey, pendingChannelIds.toArray());
-            redisOperator.expireForSet(setKey, Constants.CHAT_MESSAGE_EXPIRATION_TIME_DAY, TimeUnit.DAYS);
+            if(!pendingChannelIds.isEmpty()) {
+                redisOperator.sAdd(setKey, pendingChannelIds.toArray());
+                redisOperator.expireForSet(setKey, Constants.CHAT_MESSAGE_EXPIRATION_TIME_DAY, TimeUnit.DAYS);
+            }
         }
 
         public GroupMessageViewed viewMessage(String messageUuid, String currentUserImessageId){
